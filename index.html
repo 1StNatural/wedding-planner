@@ -1,0 +1,2085 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Master Wedding Planner - Sistem Kolaboratif Real-Time</title>
+    <!-- Google Fonts: Inter & Playfair Display -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&display=swap" rel="stylesheet">
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        serif: ['Playfair Display', 'serif'],
+                    },
+                    colors: {
+                        gold: {
+                            50: '#fbf8eb',
+                            100: '#f5edd2',
+                            200: '#ead7a2',
+                            300: '#dcbe6c',
+                            400: '#cfa544',
+                            500: '#bf8d30',
+                            600: '#a37126',
+                            700: '#835420',
+                            800: '#6b431e',
+                            900: '#58361b',
+                        },
+                        burgundy: {
+                            50: '#fdf2f4',
+                            100: '#fbe6e9',
+                            200: '#f7cfd6',
+                            300: '#f0adb9',
+                            400: '#e57e93',
+                            500: '#d54f6e',
+                            600: '#bf3356',
+                            700: '#a02343',
+                            800: '#85203b',
+                            900: '#711e34',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        /* Custom scrollbar */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #f1f1f1;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #cfa544;
+            border-radius: 3px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #bf8d30;
+        }
+    </style>
+</head>
+<body class="bg-[#faf8f5] text-slate-800 font-sans min-h-screen flex flex-col antialiased">
+
+    <!-- Browser Security Warning Banner (Hidden by default) -->
+    <div id="security-warning" class="hidden bg-amber-500 text-white px-4 py-2.5 text-center text-xs font-semibold flex items-center justify-center gap-2 z-50">
+        <i class="fa-solid fa-triangle-exclamation text-base"></i>
+        <span>Aplikasi dibuka secara lokal (file://). Untuk mengaktifkan sinkronisasi real-time antar handphone, silakan jalankan lewat web server atau hosting gratis (GitHub Pages/Vercel).</span>
+    </div>
+
+    <!-- Navigation / Header -->
+    <header class="bg-white border-b border-gold-100 shadow-sm sticky top-0 z-40">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-20">
+                <div class="flex items-center space-x-3">
+                    <div class="bg-gradient-to-tr from-gold-500 to-gold-300 p-2.5 rounded-xl shadow-md flex items-center justify-center text-white">
+                        <i class="fa-solid fa-ring text-2xl animate-pulse"></i>
+                    </div>
+                    <div>
+                        <h1 class="font-serif text-xl sm:text-2xl font-bold tracking-wide text-gold-800">Wedding Planner</h1>
+                        <p class="text-xs text-slate-500 font-medium tracking-wider uppercase">Sistem Kolaborasi Real-Time</p>
+                    </div>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <!-- Real-Time Database Connection Indicator -->
+                    <div id="sync-status" class="flex items-center space-x-2 bg-amber-50 text-amber-700 px-3.5 py-1.5 rounded-full text-xs font-semibold border border-amber-200 shadow-sm">
+                        <span class="relative flex h-2.5 w-2.5">
+                            <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75"></span>
+                            <span class="relative inline-flex rounded-full h-2.5 w-2.5 bg-amber-500" id="status-dot"></span>
+                        </span>
+                        <span id="status-text">Menghubungkan...</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content Area -->
+    <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 flex flex-col lg:flex-row gap-8">
+        <!-- Sidebar Navigation -->
+        <aside class="w-full lg:w-64 shrink-0">
+            <div class="bg-white rounded-2xl border border-gold-100 shadow-sm p-4 sticky top-28 space-y-2">
+                <p class="text-xs font-bold text-slate-400 uppercase tracking-widest px-3 mb-3">Menu Perencanaan</p>
+                <nav class="space-y-1">
+                    <button onclick="switchTab('dashboard')" id="btn-tab-dashboard" class="tab-btn w-full flex items-center space-x-3 px-4 py-3 rounded-xl text-sm font-semibold transition-all bg-gold-50 text-gold-700 border border-gold-100 shadow-sm">
+                        <i class="fa-solid fa-chart-line text-lg w-6"></i>
+                        <span>Dasbor Utama</span>
+                    </button>
+                    <button onclick="switchTab('concept')" id="btn-tab-concept" class="tab-btn w-full flex items-center space-x-3 px-4 py-3 rounded-xl text-sm font-semibold transition-all text-slate-600 hover:bg-slate-50 hover:text-slate-900 border border-transparent">
+                        <i class="fa-solid fa-palette text-lg w-6"></i>
+                        <span>Konsep & Admin</span>
+                    </button>
+                    <button onclick="switchTab('budget')" id="btn-tab-budget" class="tab-btn w-full flex items-center space-x-3 px-4 py-3 rounded-xl text-sm font-semibold transition-all text-slate-600 hover:bg-slate-50 hover:text-slate-900 border border-transparent">
+                        <i class="fa-solid fa-wallet text-lg w-6"></i>
+                        <span>Anggaran (Budget)</span>
+                    </button>
+                    <button onclick="switchTab('timeline')" id="btn-tab-timeline" class="tab-btn w-full flex items-center space-x-3 px-4 py-3 rounded-xl text-sm font-semibold transition-all text-slate-600 hover:bg-slate-50 hover:text-slate-900 border border-transparent">
+                        <i class="fa-solid fa-calendar-check text-lg w-6"></i>
+                        <span>Jadwal (Timeline)</span>
+                    </button>
+                    <button onclick="switchTab('guests')" id="btn-tab-guests" class="tab-btn w-full flex items-center space-x-3 px-4 py-3 rounded-xl text-sm font-semibold transition-all text-slate-600 hover:bg-slate-50 hover:text-slate-900 border border-transparent">
+                        <i class="fa-solid fa-users text-lg w-6"></i>
+                        <span>Tamu & Vendor</span>
+                    </button>
+                    <button onclick="switchTab('rundown')" id="btn-tab-rundown" class="tab-btn w-full flex items-center space-x-3 px-4 py-3 rounded-xl text-sm font-semibold transition-all text-slate-600 hover:bg-slate-50 hover:text-slate-900 border border-transparent">
+                        <i class="fa-solid fa-clock-rotate-left text-lg w-6"></i>
+                        <span>Acara & Emergency</span>
+                    </button>
+                </nav>
+                <div class="pt-4 border-t border-slate-100 mt-4">
+                    <div class="bg-gradient-to-br from-gold-50 to-gold-100 rounded-xl p-3.5 border border-gold-200">
+                        <p class="text-xs font-bold text-gold-800 flex items-center gap-1.5 mb-1">
+                            <i class="fa-solid fa-user-group text-gold-600"></i> Kolaborasi Aktif
+                        </p>
+                        <p id="collaboration-helper-text" class="text-[11px] text-gold-700 leading-relaxed">
+                            Aplikasi berjalan dalam mode penyimpanan lokal komputer Anda. Hubungkan ke hosting web / Firebase agar bisa diakses bersama di HP pasangan.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Content Sections -->
+        <section class="flex-1 min-w-0 space-y-6">
+
+            <!-- TAB 1: DASHBOARD -->
+            <div id="tab-dashboard" class="tab-content block space-y-6">
+                <!-- Wedding Hero Card -->
+                <div class="bg-white rounded-3xl border border-gold-100 shadow-md p-6 sm:p-8 relative overflow-hidden bg-cover bg-center">
+                    <div class="absolute -right-16 -top-16 w-56 h-56 bg-gold-100 rounded-full opacity-30 blur-2xl"></div>
+                    <div class="absolute -left-16 -bottom-16 w-56 h-56 bg-burgundy-100 rounded-full opacity-20 blur-2xl"></div>
+                    <div class="relative z-10 flex flex-col md:flex-row md:items-center md:justify-between gap-6">
+                        <div class="space-y-3">
+                            <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-gold-100 text-gold-800 border border-gold-200">
+                                <i class="fa-regular fa-calendar-days mr-1.5"></i> Live Wedding Portal
+                            </span>
+                            <div class="flex items-center space-x-3">
+                                <h2 class="font-serif text-3xl sm:text-4xl font-bold text-slate-800" id="view-couple-names">Romeo & Juliet</h2>
+                                <button onclick="openWeddingConfigModal()" class="text-gold-600 hover:text-gold-700 p-1.5 rounded-full hover:bg-gold-50 transition-all" title="Edit Identitas Pernikahan">
+                                    <i class="fa-solid fa-pen-to-square text-lg"></i>
+                                </button>
+                            </div>
+                            <div class="space-y-1.5 text-sm text-slate-500 font-medium">
+                                <p class="flex items-center"><i class="fa-solid fa-calendar text-gold-600 w-5"></i> <span id="view-wedding-date">Sabtu, 24 Oktober 2026</span></p>
+                                <p class="flex items-center"><i class="fa-solid fa-location-dot text-gold-600 w-5"></i> <span id="view-wedding-venue">Luxury Hall Room, Jakarta</span></p>
+                            </div>
+                        </div>
+                        <div class="bg-gradient-to-tr from-gold-500 to-gold-400 text-white rounded-2xl px-6 py-4 shadow-lg text-center md:text-right shrink-0">
+                            <p class="text-xs uppercase font-bold tracking-wider opacity-90 mb-1">Countdown Hari-H</p>
+                            <h3 class="text-3xl sm:text-4xl font-serif font-bold" id="countdown-days">---</h3>
+                            <p class="text-xs mt-1 font-medium" id="countdown-status">Hari Menuju Bahagia</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Metrics Dashboard Grid -->
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <!-- Card Budget -->
+                    <div class="bg-white rounded-2xl border border-gold-100 shadow-sm p-6 hover:shadow-md transition-shadow">
+                        <div class="flex items-center justify-between mb-4">
+                            <span class="text-slate-400 text-xs font-bold uppercase tracking-wider">Metrik Anggaran</span>
+                            <div class="bg-emerald-50 text-emerald-600 p-2.5 rounded-xl"><i class="fa-solid fa-wallet text-lg"></i></div>
+                        </div>
+                        <p class="text-xs font-semibold text-slate-400">Total Pengeluaran</p>
+                        <h4 class="text-2xl font-bold text-slate-800 mt-1" id="dash-total-spending">Rp 0</h4>
+                        <div class="mt-4">
+                            <div class="w-full bg-slate-100 rounded-full h-2">
+                                <div id="dash-budget-progress" class="bg-emerald-500 h-2 rounded-full" style="width: 0%"></div>
+                            </div>
+                            <div class="flex justify-between text-xs mt-1.5 font-medium text-slate-500">
+                                <span>Budget Terpakai: <span id="dash-budget-percent">0%</span></span>
+                                <span>Sisa Limit</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Card Checklist Progress -->
+                    <div class="bg-white rounded-2xl border border-gold-100 shadow-sm p-6 hover:shadow-md transition-shadow">
+                        <div class="flex items-center justify-between mb-4">
+                            <span class="text-slate-400 text-xs font-bold uppercase tracking-wider">Tugas Selesai</span>
+                            <div class="bg-amber-50 text-amber-600 p-2.5 rounded-xl"><i class="fa-solid fa-list-check text-lg"></i></div>
+                        </div>
+                        <p class="text-xs font-semibold text-slate-400">Progres Checklist Kerja</p>
+                        <h4 class="text-2xl font-bold text-slate-800 mt-1" id="dash-checklist-count">0 / 0</h4>
+                        <div class="mt-4">
+                            <div class="w-full bg-slate-100 rounded-full h-2">
+                                <div id="dash-checklist-progress" class="bg-amber-500 h-2 rounded-full" style="width: 0%"></div>
+                            </div>
+                            <div class="flex justify-between text-xs mt-1.5 font-medium text-slate-500">
+                                <span>Pekerjaan Selesai</span>
+                                <span id="dash-checklist-percent">0%</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Card Tamu RSVP -->
+                    <div class="bg-white rounded-2xl border border-gold-100 shadow-sm p-6 hover:shadow-md transition-shadow">
+                        <div class="flex items-center justify-between mb-4">
+                            <span class="text-slate-400 text-xs font-bold uppercase tracking-wider">Konfirmasi RSVP</span>
+                            <div class="bg-burgundy-50 text-burgundy-600 p-2.5 rounded-xl"><i class="fa-solid fa-envelope-open-text text-lg"></i></div>
+                        </div>
+                        <p class="text-xs font-semibold text-slate-400">Total Pax Terkonfirmasi</p>
+                        <h4 class="text-2xl font-bold text-slate-800 mt-1" id="dash-rsvp-confirmed">0 Pax</h4>
+                        <div class="mt-4">
+                            <div class="w-full bg-slate-100 rounded-full h-2">
+                                <div id="dash-rsvp-progress" class="bg-burgundy-500 h-2 rounded-full" style="width: 0%"></div>
+                            </div>
+                            <div class="flex justify-between text-xs mt-1.5 font-medium text-slate-500">
+                                <span>Target Undangan: <span id="view-target-guests">---</span></span>
+                                <span>Hadir: <span id="dash-rsvp-percent">0%</span></span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Quick Notice Panel -->
+                <div class="bg-blue-50 border border-blue-200 rounded-2xl p-5 flex items-start space-x-3.5 shadow-sm">
+                    <i class="fa-solid fa-circle-info text-blue-600 text-xl mt-0.5 shrink-0"></i>
+                    <div>
+                        <h5 class="font-bold text-blue-900 text-sm">Bagaimana Cara Kerja Kolaboratif Ini?</h5>
+                        <p class="text-xs text-blue-800 mt-1 leading-relaxed">
+                            Data yang Anda ubah di tab manapun (seperti checklist dokumen, nominal budget, maupun nama tamu) akan langsung terupdate ke server cloud secara real-time. Jika dijalankan secara offline, browser Anda akan merekam perubahan ini secara lokal menggunakan fitur **LocalStorage**, sehingga data tidak akan hilang saat di-refresh!
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TAB 2: CONCEPT & ADMIN -->
+            <div id="tab-concept" class="tab-content hidden space-y-6">
+                <!-- Color & Theme Card -->
+                <div class="bg-white rounded-2xl border border-gold-100 shadow-sm p-6 space-y-4">
+                    <div class="flex justify-between items-center pb-4 border-b border-slate-100">
+                        <h3 class="font-serif text-xl font-bold text-slate-800 flex items-center gap-2">
+                            <i class="fa-solid fa-wand-magic-sparkles text-gold-600"></i> Penentuan Palet Warna Visual
+                        </h3>
+                    </div>
+                    <p class="text-xs text-slate-500 leading-relaxed">
+                        Gunakan kode hex di bawah ini untuk konsistensi dekorasi, pakaian keluarga, panitia, dan undangan pernikahan.
+                    </p>
+                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-2">
+                        <!-- Primary Color -->
+                        <div class="bg-slate-50 p-4 rounded-xl border border-slate-100 flex flex-col items-center text-center space-y-3">
+                            <span class="text-xs font-semibold text-slate-500">Warna Utama (60%)</span>
+                            <div id="color-block-primary" class="w-16 h-16 rounded-full border border-slate-200 shadow-inner transition-colors duration-300"></div>
+                            <input onchange="updateColors()" id="color-input-primary" type="color" class="w-10 h-10 border-0 rounded cursor-pointer">
+                            <span id="color-hex-primary" class="font-mono text-xs font-bold text-slate-600">#FFFFFF</span>
+                        </div>
+                        <!-- Secondary Color -->
+                        <div class="bg-slate-50 p-4 rounded-xl border border-slate-100 flex flex-col items-center text-center space-y-3">
+                            <span class="text-xs font-semibold text-slate-500">Warna Sekunder (30%)</span>
+                            <div id="color-block-secondary" class="w-16 h-16 rounded-full border border-slate-200 shadow-inner transition-colors duration-300"></div>
+                            <input onchange="updateColors()" id="color-input-secondary" type="color" class="w-10 h-10 border-0 rounded cursor-pointer">
+                            <span id="color-hex-secondary" class="font-mono text-xs font-bold text-slate-600">#D4AF37</span>
+                        </div>
+                        <!-- Accent Color -->
+                        <div class="bg-slate-50 p-4 rounded-xl border border-slate-100 flex flex-col items-center text-center space-y-3">
+                            <span class="text-xs font-semibold text-slate-500">Warna Aksen (10%)</span>
+                            <div id="color-block-accent" class="w-16 h-16 rounded-full border border-slate-200 shadow-inner transition-colors duration-300"></div>
+                            <input onchange="updateColors()" id="color-input-accent" type="color" class="w-10 h-10 border-0 rounded cursor-pointer">
+                            <span id="color-hex-accent" class="font-mono text-xs font-bold text-slate-600">#800020</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Legal Checklist Section -->
+                <div class="bg-white rounded-2xl border border-gold-100 shadow-sm p-6 space-y-4">
+                    <h3 class="font-serif text-xl font-bold text-slate-800 flex items-center gap-2 pb-4 border-b border-slate-100">
+                        <i class="fa-solid fa-file-invoice text-gold-600"></i> Dokumen Legalitas (KUA / Capil)
+                    </h3>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left border-collapse">
+                            <thead>
+                                <tr class="bg-slate-50 text-slate-500 text-[11px] font-bold uppercase tracking-wider border-b border-slate-100">
+                                    <th class="py-3 px-4 w-12 text-center">Status</th>
+                                    <th class="py-3 px-4">Nama Dokumen Persyaratan</th>
+                                    <th class="py-3 px-4 w-28 text-center">Batas Waktu</th>
+                                    <th class="py-3 px-4 w-40">PIC</th>
+                                    <th class="py-3 px-4">Catatan</th>
+                                </tr>
+                            </thead>
+                            <tbody id="legal-table-body" class="text-sm divide-y divide-slate-50">
+                                <!-- Dynamic Loading -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Committee Core Structure Section -->
+                <div class="bg-white rounded-2xl border border-gold-100 shadow-sm p-6 space-y-4">
+                    <div class="flex justify-between items-center pb-4 border-b border-slate-100">
+                        <h3 class="font-serif text-xl font-bold text-slate-800 flex items-center gap-2">
+                            <i class="fa-solid fa-sitemap text-gold-600"></i> Struktur Panitia Inti Keluarga
+                        </h3>
+                        <button onclick="openAddCommitteeModal()" class="bg-gold-500 hover:bg-gold-600 text-white font-semibold text-xs px-3.5 py-2 rounded-xl flex items-center gap-1.5 transition-colors shadow-sm">
+                            <i class="fa-solid fa-user-plus"></i> Tambah Anggota
+                        </button>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left border-collapse">
+                            <thead>
+                                <tr class="bg-slate-50 text-slate-500 text-[11px] font-bold uppercase tracking-wider border-b border-slate-100">
+                                    <th class="py-3 px-4">Peran Utama (Role)</th>
+                                    <th class="py-3 px-4">Nama Personel</th>
+                                    <th class="py-3 px-4">No. WhatsApp</th>
+                                    <th class="py-3 px-4">Fokus Tanggung Jawab</th>
+                                    <th class="py-3 px-4 w-20 text-center">Aksi</th>
+                                </tr>
+                            </thead>
+                            <tbody id="committee-table-body" class="text-sm divide-y divide-slate-50">
+                                <!-- Dynamic Loading -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TAB 3: BUDGET TRACKER -->
+            <div id="tab-budget" class="tab-content hidden space-y-6">
+                <!-- Budget Summary Card -->
+                <div class="bg-white rounded-2xl border border-gold-100 shadow-sm p-6 grid grid-cols-1 sm:grid-cols-3 gap-6 text-center">
+                    <div class="border-b sm:border-b-0 sm:border-r border-slate-100 pb-4 sm:pb-0">
+                        <span class="text-xs font-bold text-slate-400 uppercase tracking-wider">Target Plafon Anggaran</span>
+                        <div class="flex items-center justify-center space-x-2 mt-2">
+                            <h4 class="text-2xl font-bold text-slate-800" id="budget-sum-target">Rp 0</h4>
+                            <button onclick="openTargetBudgetModal()" class="text-slate-400 hover:text-slate-600" title="Edit Plafon"><i class="fa-solid fa-pen-clip text-xs"></i></button>
+                        </div>
+                    </div>
+                    <div class="border-b sm:border-b-0 sm:border-r border-slate-100 pb-4 sm:pb-0">
+                        <span class="text-xs font-bold text-slate-400 uppercase tracking-wider">Realisasi Pengeluaran</span>
+                        <h4 class="text-2xl font-bold text-slate-800 mt-2" id="budget-sum-realization">Rp 0</h4>
+                    </div>
+                    <div>
+                        <span class="text-xs font-bold text-slate-400 uppercase tracking-wider">Sisa Anggaran (Status)</span>
+                        <h4 class="text-2xl font-bold mt-2" id="budget-sum-diff">Rp 0</h4>
+                    </div>
+                </div>
+
+                <!-- Budget Table Container -->
+                <div class="bg-white rounded-2xl border border-gold-100 shadow-sm p-6 space-y-4">
+                    <div class="flex justify-between items-center pb-4 border-b border-slate-100">
+                        <h3 class="font-serif text-xl font-bold text-slate-800 flex items-center gap-2">
+                            <i class="fa-solid fa-wallet text-gold-600"></i> Manajemen Realisasi Anggaran Vendor
+                        </h3>
+                        <button onclick="openAddBudgetModal()" class="bg-gold-500 hover:bg-gold-600 text-white font-semibold text-xs px-3.5 py-2 rounded-xl flex items-center gap-1.5 transition-colors shadow-sm">
+                            <i class="fa-solid fa-plus"></i> Tambah Pos Vendor
+                        </button>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left border-collapse">
+                            <thead>
+                                <tr class="bg-slate-50 text-slate-500 text-[11px] font-bold uppercase tracking-wider border-b border-slate-100">
+                                    <th class="py-3 px-4">Kategori Vendor</th>
+                                    <th class="py-3 px-4 text-right">Target Budget (Rp)</th>
+                                    <th class="py-3 px-4 text-right">Realisasi (Rp)</th>
+                                    <th class="py-3 px-4 text-right">Selisih (Rp)</th>
+                                    <th class="py-3 px-4 text-center">Status Bayar</th>
+                                    <th class="py-3 px-4">Catatan & Termin DP</th>
+                                    <th class="py-3 px-4 w-20 text-center">Aksi</th>
+                                </tr>
+                            </thead>
+                            <tbody id="budget-table-body" class="text-sm divide-y divide-slate-50">
+                                <!-- Dynamic Loading -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TAB 4: TIMELINE & CHECKLIST -->
+            <div id="tab-timeline" class="tab-content hidden space-y-6">
+                <!-- Phase Nav Controls -->
+                <div class="bg-white p-2.5 rounded-2xl border border-gold-100 shadow-sm flex flex-wrap gap-1.5">
+                    <button onclick="filterTimeline('all')" class="timeline-nav-btn px-4 py-2 rounded-xl text-xs font-semibold bg-gold-500 text-white shadow-sm transition-all">Semua Fase</button>
+                    <button onclick="filterTimeline('H-9')" class="timeline-nav-btn px-4 py-2 rounded-xl text-xs font-semibold text-slate-600 hover:bg-slate-50 transition-all">H-9 BULAN</button>
+                    <button onclick="filterTimeline('H-6')" class="timeline-nav-btn px-4 py-2 rounded-xl text-xs font-semibold text-slate-600 hover:bg-slate-50 transition-all">H-6 BULAN</button>
+                    <button onclick="filterTimeline('H-3')" class="timeline-nav-btn px-4 py-2 rounded-xl text-xs font-semibold text-slate-600 hover:bg-slate-50 transition-all">H-3 BULAN</button>
+                    <button onclick="filterTimeline('H-1M')" class="timeline-nav-btn px-4 py-2 rounded-xl text-xs font-semibold text-slate-600 hover:bg-slate-50 transition-all">H-1 BULAN</button>
+                    <button onclick="filterTimeline('H-1W')" class="timeline-nav-btn px-4 py-2 rounded-xl text-xs font-semibold text-slate-600 hover:bg-slate-50 transition-all">H-1 MINGGU</button>
+                </div>
+
+                <!-- Timeline Checklist Grid -->
+                <div class="bg-white rounded-2xl border border-gold-100 shadow-sm p-6 space-y-4">
+                    <div class="flex justify-between items-center pb-4 border-b border-slate-100">
+                        <h3 class="font-serif text-xl font-bold text-slate-800 flex items-center gap-2">
+                            <i class="fa-solid fa-route text-gold-600"></i> Milestone & Timeline Kerja Berkala
+                        </h3>
+                        <button onclick="openAddTimelineModal()" class="bg-gold-500 hover:bg-gold-600 text-white font-semibold text-xs px-3.5 py-2 rounded-xl flex items-center gap-1.5 transition-colors shadow-sm">
+                            <i class="fa-solid fa-plus"></i> Tambah Tugas
+                        </button>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left border-collapse">
+                            <thead>
+                                <tr class="bg-slate-50 text-slate-500 text-[11px] font-bold uppercase tracking-wider border-b border-slate-100">
+                                    <th class="py-3 px-4 w-12 text-center">Status</th>
+                                    <th class="py-3 px-4 w-28 text-center">Fase</th>
+                                    <th class="py-3 px-4">Deskripsi Tugas / Milestone</th>
+                                    <th class="py-3 px-4 w-40">Penanggung Jawab</th>
+                                    <th class="py-3 px-4">Catatan Tambahan</th>
+                                    <th class="py-3 px-4 w-16 text-center">Aksi</th>
+                                </tr>
+                            </thead>
+                            <tbody id="timeline-table-body" class="text-sm divide-y divide-slate-50">
+                                <!-- Dynamic Loading -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TAB 5: VENDORS & GUESTS -->
+            <div id="tab-guests" class="tab-content hidden space-y-6">
+                <!-- Guest Management Panel -->
+                <div class="bg-white rounded-2xl border border-gold-100 shadow-sm p-6 space-y-4">
+                    <div class="flex flex-col sm:flex-row justify-between sm:items-center gap-4 pb-4 border-b border-slate-100">
+                        <div>
+                            <h3 class="font-serif text-xl font-bold text-slate-800 flex items-center gap-2">
+                                <i class="fa-solid fa-address-book text-gold-600"></i> Daftar Tamu & Konfirmasi RSVP
+                            </h3>
+                            <p class="text-xs text-slate-400 mt-1">Total Porsi Pax yang direncanakan: <strong id="total-pax-count" class="text-slate-700">0 Pax</strong></p>
+                        </div>
+                        <div class="flex items-center gap-2 shrink-0">
+                            <button onclick="openAddGuestModal()" class="bg-gold-500 hover:bg-gold-600 text-white font-semibold text-xs px-3.5 py-2 rounded-xl flex items-center gap-1.5 transition-colors shadow-sm">
+                                <i class="fa-solid fa-user-plus"></i> Tambah Tamu
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Filter Control bar -->
+                    <div class="flex flex-col sm:flex-row gap-3">
+                        <div class="relative flex-1">
+                            <span class="absolute inset-y-0 left-0 pl-3 flex items-center text-slate-400">
+                                <i class="fa-solid fa-magnifying-glass text-xs"></i>
+                            </span>
+                            <input oninput="searchGuests()" id="guest-search-input" type="text" placeholder="Cari nama tamu..." class="w-full pl-9 pr-4 py-2 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-gold-500 focus:border-gold-500 bg-slate-50">
+                        </div>
+                        <select onchange="searchGuests()" id="guest-filter-status" class="py-2 px-3 border border-slate-200 rounded-xl text-sm focus:outline-none bg-slate-50 text-slate-600 font-semibold">
+                            <option value="all">Semua Status RSVP</option>
+                            <option value="CONFIRMED">CONFIRMED</option>
+                            <option value="PENDING">PENDING</option>
+                            <option value="DECLINED">DECLINED</option>
+                        </select>
+                        <select onchange="searchGuests()" id="guest-filter-cat" class="py-2 px-3 border border-slate-200 rounded-xl text-sm focus:outline-none bg-slate-50 text-slate-600 font-semibold">
+                            <option value="all">Semua Kategori</option>
+                            <option value="VVIP">VVIP</option>
+                            <option value="VIP">VIP</option>
+                            <option value="Regular">Regular</option>
+                        </select>
+                    </div>
+
+                    <!-- Guest table -->
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left border-collapse">
+                            <thead>
+                                <tr class="bg-slate-50 text-slate-500 text-[11px] font-bold uppercase tracking-wider border-b border-slate-100">
+                                    <th class="py-3 px-4 w-12 text-center">No</th>
+                                    <th class="py-3 px-4">Nama Lengkap Tamu</th>
+                                    <th class="py-3 px-4 w-28 text-center">Kategori</th>
+                                    <th class="py-3 px-4 w-32 text-center">Status RSVP</th>
+                                    <th class="py-3 px-4 w-16 text-center">Pax</th>
+                                    <th class="py-3 px-4">Kebutuhan Spesifik / Meja</th>
+                                    <th class="py-3 px-4 w-16 text-center">Aksi</th>
+                                </tr>
+                            </thead>
+                            <tbody id="guest-table-body" class="text-sm divide-y divide-slate-50">
+                                <!-- Dynamic Loading -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Vendor Evaluation Cards -->
+                <div class="bg-white rounded-2xl border border-gold-100 shadow-sm p-6 space-y-4">
+                    <div class="flex justify-between items-center pb-4 border-b border-slate-100">
+                        <h3 class="font-serif text-xl font-bold text-slate-800 flex items-center gap-2">
+                            <i class="fa-solid fa-file-shield text-gold-600"></i> Kurasi & Perbandingan Evaluasi Vendor
+                        </h3>
+                        <button onclick="openAddVendorModal()" class="bg-gold-500 hover:bg-gold-600 text-white font-semibold text-xs px-3.5 py-2 rounded-xl flex items-center gap-1.5 transition-colors shadow-sm">
+                            <i class="fa-solid fa-plus"></i> Tambah Vendor Pembanding
+                        </button>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left border-collapse">
+                            <thead>
+                                <tr class="bg-slate-50 text-slate-500 text-[11px] font-bold uppercase tracking-wider border-b border-slate-100">
+                                    <th class="py-3 px-4">Nama Vendor</th>
+                                    <th class="py-3 px-4">Kategori Layanan</th>
+                                    <th class="py-3 px-4 text-center">Skor Portofolio</th>
+                                    <th class="py-3 px-4 text-center">Responsivitas</th>
+                                    <th class="py-3 px-4 text-right">Penawaran Harga</th>
+                                    <th class="py-3 px-4">Kelebihan / Kekurangan</th>
+                                    <th class="py-3 px-4 text-center">Keputusan Akhir</th>
+                                    <th class="py-3 px-4 w-16 text-center">Aksi</th>
+                                </tr>
+                            </thead>
+                            <tbody id="vendor-table-body" class="text-sm divide-y divide-slate-50">
+                                <!-- Dynamic Loading -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TAB 6: RUNDOWN & EMERGENCY -->
+            <div id="tab-rundown" class="tab-content hidden space-y-6">
+                <!-- Day-Of Rundown Schedule -->
+                <div class="bg-white rounded-2xl border border-gold-100 shadow-sm p-6 space-y-4">
+                    <div class="flex justify-between items-center pb-4 border-b border-slate-100">
+                        <h3 class="font-serif text-xl font-bold text-slate-800 flex items-center gap-2">
+                            <i class="fa-solid fa-timeline text-gold-600"></i> Susunan Rundown Acara Hari-H (Skenario Taktis)
+                        </h3>
+                        <button onclick="openAddRundownModal()" class="bg-gold-500 hover:bg-gold-600 text-white font-semibold text-xs px-3.5 py-2 rounded-xl flex items-center gap-1.5 transition-colors shadow-sm">
+                            <i class="fa-solid fa-plus"></i> Tambah Acara
+                        </button>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left border-collapse">
+                            <thead>
+                                <tr class="bg-slate-50 text-slate-500 text-[11px] font-bold uppercase tracking-wider border-b border-slate-100">
+                                    <th class="py-3 px-4 w-32 text-center">Waktu (WIB)</th>
+                                    <th class="py-3 px-4 w-20 text-center">Durasi</th>
+                                    <th class="py-3 px-4">Aktivitas / Acara Pernikahan</th>
+                                    <th class="py-3 px-4 w-40">Penanggung Jawab (PIC)</th>
+                                    <th class="py-3 px-4">Pihak yang Terlibat</th>
+                                    <th class="py-3 px-4">Perlengkapan & Catatan Lapangan</th>
+                                    <th class="py-3 px-4 w-16 text-center">Aksi</th>
+                                </tr>
+                            </thead>
+                            <tbody id="rundown-table-body" class="text-sm divide-y divide-slate-50">
+                                <!-- Dynamic Loading -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Emergency Kit List -->
+                <div class="bg-white rounded-2xl border border-gold-100 shadow-sm p-6 space-y-4">
+                    <h3 class="font-serif text-xl font-bold text-slate-800 flex items-center gap-2 pb-4 border-b border-slate-100">
+                        <i class="fa-solid fa-kit-medical text-gold-600"></i> Inventaris Kotak Darurat ("Emergency Kit") Pengantin
+                    </h3>
+                    <p class="text-xs text-slate-500">
+                        Sediakan kotak darurat khusus ini dan letakkan di ruang rias pengantin yang mudah dijangkau oleh panitia/WO.
+                    </p>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left border-collapse">
+                            <thead>
+                                <tr class="bg-slate-50 text-slate-500 text-[11px] font-bold uppercase tracking-wider border-b border-slate-100">
+                                    <th class="py-3 px-4 w-12 text-center">Keberadaan</th>
+                                    <th class="py-3 px-4 w-40">Kategori Kit</th>
+                                    <th class="py-3 px-4">Nama Barang / Tools</th>
+                                    <th class="py-3 px-4 w-24 text-center">Jumlah</th>
+                                    <th class="py-3 px-4 w-40">PIC Handover</th>
+                                    <th class="py-3 px-4">Kegunaan & Catatan</th>
+                                </tr>
+                            </thead>
+                            <tbody id="emergency-table-body" class="text-sm divide-y divide-slate-50">
+                                <!-- Dynamic Loading -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- MODAL 1: Wedding Identity Editor -->
+    <div id="modal-wedding-config" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm hidden flex items-center justify-center z-50 p-4">
+        <div class="bg-white rounded-3xl w-full max-w-lg shadow-xl overflow-hidden animate-fade-in">
+            <div class="bg-gold-500 text-white px-6 py-4 flex justify-between items-center">
+                <h4 class="font-serif font-bold text-lg"><i class="fa-solid fa-gear mr-2"></i> Pengaturan Identitas Pernikahan</h4>
+                <button onclick="closeModal('modal-wedding-config')" class="text-white hover:text-slate-200"><i class="fa-solid fa-xmark text-xl"></i></button>
+            </div>
+            <div class="p-6 space-y-4">
+                <div>
+                    <label class="block text-xs font-bold text-slate-500 uppercase mb-1.5">Nama Mempelai Pengantin</label>
+                    <input id="input-couple-names" type="text" class="w-full px-4 py-2.5 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-gold-500 focus:border-gold-500">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-slate-500 uppercase mb-1.5">Tanggal Hari-H</label>
+                    <input id="input-wedding-date" type="date" class="w-full px-4 py-2.5 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-gold-500 focus:border-gold-500">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-slate-500 uppercase mb-1.5">Lokasi Utama Venue</label>
+                    <input id="input-wedding-venue" type="text" class="w-full px-4 py-2.5 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-gold-500 focus:border-gold-500">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-slate-500 uppercase mb-1.5">Target Undangan Tamu</label>
+                    <input id="input-target-guests" type="number" class="w-full px-4 py-2.5 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-gold-500 focus:border-gold-500">
+                </div>
+            </div>
+            <div class="bg-slate-50 px-6 py-4 flex justify-end space-x-3">
+                <button onclick="closeModal('modal-wedding-config')" class="px-4 py-2 rounded-xl text-xs font-bold text-slate-500 hover:bg-slate-100">Batal</button>
+                <button onclick="saveWeddingConfig()" class="bg-gold-500 hover:bg-gold-600 text-white font-bold text-xs px-5 py-2.5 rounded-xl shadow-sm">Simpan Perubahan</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL 2: Add Guest Form -->
+    <div id="modal-add-guest" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm hidden flex items-center justify-center z-50 p-4">
+        <div class="bg-white rounded-3xl w-full max-w-lg shadow-xl overflow-hidden">
+            <div class="bg-gold-500 text-white px-6 py-4 flex justify-between items-center">
+                <h4 class="font-serif font-bold text-lg" id="guest-modal-title"><i class="fa-solid fa-user-plus mr-2"></i> Tambah Daftar Tamu</h4>
+                <button onclick="closeModal('modal-add-guest')" class="text-white hover:text-slate-200"><i class="fa-solid fa-xmark text-xl"></i></button>
+            </div>
+            <input type="hidden" id="input-guest-id">
+            <div class="p-6 space-y-4">
+                <div>
+                    <label class="block text-xs font-bold text-slate-500 uppercase mb-1.5">Nama Lengkap Tamu</label>
+                    <input id="input-guest-name" type="text" class="w-full px-4 py-2.5 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-gold-500 focus:border-gold-500" placeholder="Contoh: Bpk. Hermawan">
+                </div>
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs font-bold text-slate-500 uppercase mb-1.5">Kategori</label>
+                        <select id="input-guest-category" class="w-full px-4 py-2.5 border border-slate-200 rounded-xl text-sm focus:outline-none bg-white">
+                            <option value="Regular">Regular</option>
+                            <option value="VIP">VIP</option>
+                            <option value="VVIP">VVIP</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-500 uppercase mb-1.5">Status RSVP</label>
+                        <select id="input-guest-rsvp" class="w-full px-4 py-2.5 border border-slate-200 rounded-xl text-sm focus:outline-none bg-white">
+                            <option value="PENDING">PENDING</option>
+                            <option value="CONFIRMED">CONFIRMED</option>
+                            <option value="DECLINED">DECLINED</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="grid grid-cols-3 gap-4">
+                    <div class="col-span-1">
+                        <label class="block text-xs font-bold text-slate-500 uppercase mb-1.5">Pax (Kursi)</label>
+                        <input id="input-guest-pax" type="number" value="2" min="0" class="w-full px-4 py-2.5 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-gold-500 focus:border-gold-500">
+                    </div>
+                    <div class="col-span-2">
+                        <label class="block text-xs font-bold text-slate-500 uppercase mb-1.5">Catatan Khusus / No. Meja</label>
+                        <input id="input-guest-notes" type="text" class="w-full px-4 py-2.5 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-gold-500 focus:border-gold-500" placeholder="Contoh: Meja VIP depan panggung">
+                    </div>
+                </div>
+            </div>
+            <div class="bg-slate-50 px-6 py-4 flex justify-end space-x-3">
+                <button onclick="closeModal('modal-add-guest')" class="px-4 py-2 rounded-xl text-xs font-bold text-slate-500 hover:bg-slate-100">Batal</button>
+                <button onclick="saveGuestData()" class="bg-gold-500 hover:bg-gold-600 text-white font-bold text-xs px-5 py-2.5 rounded-xl shadow-sm">Simpan</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL 3: Add/Edit/Plafon Anggaran Form -->
+    <div id="modal-add-budget" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm hidden flex items-center justify-center z-50 p-4">
+        <div class="bg-white rounded-3xl w-full max-w-lg shadow-xl overflow-hidden">
+            <div class="bg-gold-500 text-white px-6 py-4 flex justify-between items-center">
+                <h4 class="font-serif font-bold text-lg" id="budget-modal-title"><i class="fa-solid fa-plus mr-2"></i> Tambah Pos Vendor Baru</h4>
+                <button onclick="closeModal('modal-add-budget')" class="text-white hover:text-slate-200"><i class="fa-solid fa-xmark text-xl"></i></button>
+            </div>
+            <input type="hidden" id="input-budget-id">
+            <div class="p-6 space-y-4">
+                <div>
+                    <label class="block text-xs font-bold text-slate-500 uppercase mb-1.5">Nama / Kategori Pos Vendor</label>
+                    <input id="input-budget-category" type="text" class="w-full px-4 py-2.5 border border-slate-200 rounded-xl text-sm focus:outline-none" placeholder="Contoh: Catering Utama">
+                </div>
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs font-bold text-slate-500 uppercase mb-1.5">Target Anggaran (Rp)</label>
+                        <input id="input-budget-target" type="number" class="w-full px-4 py-2.5 border border-slate-200 rounded-xl text-sm focus:outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-500 uppercase mb-1.5">Realisasi (Rp)</label>
+                        <input id="input-budget-real" type="number" class="w-full px-4 py-2.5 border border-slate-200 rounded-xl text-sm focus:outline-none">
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-slate-500 uppercase mb-1.5">Status Pembayaran</label>
+                    <select id="input-budget-status" class="w-full px-4 py-2.5 border border-slate-200 rounded-xl text-sm focus:outline-none bg-white">
+                        <option value="Belum DP">Belum DP</option>
+                        <option value="DP 30%">DP 30%</option>
+                        <option value="DP 50%">DP 50%</option>
+                        <option value="Lunas">Lunas</option>
+                        <option value="Dialokasikan">Dialokasikan</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-slate-500 uppercase mb-1.5">Catatan / Keterangan Termin Pembayaran</label>
+                    <textarea id="input-budget-notes" rows="2" class="w-full px-4 py-2.5 border border-slate-200 rounded-xl text-sm focus:outline-none" placeholder="Contoh: DP 50% dibayar H-30, pelunasan H-7"></textarea>
+                </div>
+            </div>
+            <div class="bg-slate-50 px-6 py-4 flex justify-end space-x-3">
+                <button onclick="closeModal('modal-add-budget')" class="px-4 py-2 rounded-xl text-xs font-bold text-slate-500 hover:bg-slate-100">Batal</button>
+                <button onclick="saveBudgetData()" class="bg-gold-500 hover:bg-gold-600 text-white font-bold text-xs px-5 py-2.5 rounded-xl shadow-sm">Simpan</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL 4: Target Plafon Anggaran -->
+    <div id="modal-target-budget" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm hidden flex items-center justify-center z-50 p-4">
+        <div class="bg-white rounded-3xl w-full max-w-sm shadow-xl overflow-hidden">
+            <div class="bg-gold-500 text-white px-5 py-3.5 flex justify-between items-center">
+                <h4 class="font-serif font-bold text-base"><i class="fa-solid fa-money-bill-wave mr-2"></i> Atur Target Plafon Anggaran</h4>
+                <button onclick="closeModal('modal-target-budget')" class="text-white hover:text-slate-200"><i class="fa-solid fa-xmark text-lg"></i></button>
+            </div>
+            <div class="p-5">
+                <label class="block text-xs font-bold text-slate-500 uppercase mb-1.5">Target Plafon Maksimal (Rp)</label>
+                <input id="input-max-budget" type="number" class="w-full px-4 py-2.5 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-gold-500">
+            </div>
+            <div class="bg-slate-50 px-5 py-3.5 flex justify-end space-x-3">
+                <button onclick="closeModal('modal-target-budget')" class="px-3.5 py-1.5 rounded-xl text-xs font-bold text-slate-500 hover:bg-slate-100">Batal</button>
+                <button onclick="saveMaxBudget()" class="bg-gold-500 hover:bg-gold-600 text-white font-bold text-xs px-4 py-2 rounded-xl shadow-sm">Simpan</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL 5: Add/Edit Committee Core -->
+    <div id="modal-add-committee" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm hidden flex items-center justify-center z-50 p-4">
+        <div class="bg-white rounded-3xl w-full max-w-lg shadow-xl overflow-hidden">
+            <div class="bg-gold-500 text-white px-6 py-4 flex justify-between items-center">
+                <h4 class="font-serif font-bold text-lg" id="committee-modal-title"><i class="fa-solid fa-user-plus mr-2"></i> Tambah Struktur Panitia</h4>
+                <button onclick="closeModal('modal-add-committee')" class="text-white hover:text-slate-200"><i class="fa-solid fa-xmark text-xl"></i></button>
+            </div>
+            <input type="hidden" id="input-committee-id">
+            <div class="p-6 space-y-4">
+                <div>
+                    <label class="block text-xs font-bold text-slate-500 uppercase mb-1.5">Peran Utama (Role)</label>
+                    <input id="input-comm-role" type="text" class="w-full px-4 py-2.5 border border-slate-200 rounded-xl text-sm focus:outline-none" placeholder="Contoh: Seksi Logistik">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-slate-500 uppercase mb-1.5">Nama Lengkap Personel</label>
+                    <input id="input-comm-name" type="text" class="w-full px-4 py-2.5 border border-slate-200 rounded-xl text-sm focus:outline-none" placeholder="Contoh: Budi Santoso">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-slate-500 uppercase mb-1.5">Nomor Kontak WhatsApp</label>
+                    <input id="input-comm-phone" type="text" class="w-full px-4 py-2.5 border border-slate-200 rounded-xl text-sm focus:outline-none" placeholder="Contoh: 0812-3456-7890">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-slate-500 uppercase mb-1.5">Tugas Utama / Tanggung Jawab</label>
+                    <textarea id="input-comm-duty" rows="2" class="w-full px-4 py-2.5 border border-slate-200 rounded-xl text-sm focus:outline-none" placeholder="Contoh: Mengatur konsumsi panitia dan serah terima katering"></textarea>
+                </div>
+            </div>
+            <div class="bg-slate-50 px-6 py-4 flex justify-end space-x-3">
+                <button onclick="closeModal('modal-add-committee')" class="px-4 py-2 rounded-xl text-xs font-bold text-slate-500 hover:bg-slate-100">Batal</button>
+                <button onclick="saveCommitteeData()" class="bg-gold-500 hover:bg-gold-600 text-white font-bold text-xs px-5 py-2.5 rounded-xl shadow-sm">Simpan</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL 6: Add/Edit Timeline Form -->
+    <div id="modal-add-timeline" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm hidden flex items-center justify-center z-50 p-4">
+        <div class="bg-white rounded-3xl w-full max-w-lg shadow-xl overflow-hidden">
+            <div class="bg-gold-500 text-white px-6 py-4 flex justify-between items-center">
+                <h4 class="font-serif font-bold text-lg" id="timeline-modal-title"><i class="fa-solid fa-calendar-plus mr-2"></i> Tambah Milestone/Tugas</h4>
+                <button onclick="closeModal('modal-add-timeline')" class="text-white hover:text-slate-200"><i class="fa-solid fa-xmark text-xl"></i></button>
+            </div>
+            <input type="hidden" id="input-timeline-id">
+            <div class="p-6 space-y-4">
+                <div>
+                    <label class="block text-xs font-bold text-slate-500 uppercase mb-1.5">Fase Penugasan</label>
+                    <select id="input-time-phase" class="w-full px-4 py-2.5 border border-slate-200 rounded-xl text-sm focus:outline-none bg-white">
+                        <option value="H-9">FASE 1: H-9 BULAN</option>
+                        <option value="H-6">FASE 2: H-6 BULAN</option>
+                        <option value="H-3">FASE 3: H-3 BULAN</option>
+                        <option value="H-1M">FASE 4: H-1 BULAN</option>
+                        <option value="H-1W">FASE 5: H-1 MINGGU</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-slate-500 uppercase mb-1.5">Deskripsi Tugas / Pekerjaan</label>
+                    <input id="input-time-desc" type="text" class="w-full px-4 py-2.5 border border-slate-200 rounded-xl text-sm focus:outline-none" placeholder="Contoh: DP Gedung Venue">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-slate-500 uppercase mb-1.5">Penanggung Jawab (PIC)</label>
+                    <input id="input-time-pic" type="text" class="w-full px-4 py-2.5 border border-slate-200 rounded-xl text-sm focus:outline-none" placeholder="Contoh: Pengantin Pria">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-slate-500 uppercase mb-1.5">Catatan Tambahan</label>
+                    <input id="input-time-notes" type="text" class="w-full px-4 py-2.5 border border-slate-200 rounded-xl text-sm focus:outline-none" placeholder="Contoh: Simpan kuitansi DP">
+                </div>
+            </div>
+            <div class="bg-slate-50 px-6 py-4 flex justify-end space-x-3">
+                <button onclick="closeModal('modal-add-timeline')" class="px-4 py-2 rounded-xl text-xs font-bold text-slate-500 hover:bg-slate-100">Batal</button>
+                <button onclick="saveTimelineData()" class="bg-gold-500 hover:bg-gold-600 text-white font-bold text-xs px-5 py-2.5 rounded-xl shadow-sm">Simpan</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL 7: Add/Edit Vendor Evaluator -->
+    <div id="modal-add-vendor" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm hidden flex items-center justify-center z-50 p-4">
+        <div class="bg-white rounded-3xl w-full max-w-lg shadow-xl overflow-hidden">
+            <div class="bg-gold-500 text-white px-6 py-4 flex justify-between items-center">
+                <h4 class="font-serif font-bold text-lg" id="vendor-modal-title"><i class="fa-solid fa-scale-balanced mr-2"></i> Tambah Vendor Pembanding</h4>
+                <button onclick="closeModal('modal-add-vendor')" class="text-white hover:text-slate-200"><i class="fa-solid fa-xmark text-xl"></i></button>
+            </div>
+            <input type="hidden" id="input-vendor-id">
+            <div class="p-6 space-y-4">
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs font-bold text-slate-500 uppercase mb-1.5">Nama Vendor</label>
+                        <input id="input-v-name" type="text" class="w-full px-4 py-2.5 border border-slate-200 rounded-xl text-sm focus:outline-none" placeholder="Vendor A">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-500 uppercase mb-1.5">Kategori Layanan</label>
+                        <input id="input-v-service" type="text" class="w-full px-4 py-2.5 border border-slate-200 rounded-xl text-sm focus:outline-none" placeholder="Catering / MUA / Dekor">
+                    </div>
+                </div>
+                <div class="grid grid-cols-3 gap-4">
+                    <div>
+                        <label class="block text-xs font-bold text-slate-500 uppercase mb-1.5">Skor Portfolio (1-10)</label>
+                        <input id="input-v-portfolio" type="number" min="1" max="10" class="w-full px-4 py-2.5 border border-slate-200 rounded-xl text-sm focus:outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-500 uppercase mb-1.5">Responsivitas (1-10)</label>
+                        <input id="input-v-response" type="number" min="1" max="10" class="w-full px-4 py-2.5 border border-slate-200 rounded-xl text-sm focus:outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-500 uppercase mb-1.5">Penawaran Harga (Rp)</label>
+                        <input id="input-v-price" type="number" class="w-full px-4 py-2.5 border border-slate-200 rounded-xl text-sm focus:outline-none">
+                    </div>
+                </div>
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs font-bold text-slate-500 uppercase mb-1.5">Kelebihan / Kekurangan</label>
+                        <input id="input-v-proscons" type="text" class="w-full px-4 py-2.5 border border-slate-200 rounded-xl text-sm focus:outline-none" placeholder="(+) Rasa enak, (-) Sedikit mahal">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-500 uppercase mb-1.5">Keputusan Akhir</label>
+                        <select id="input-v-decision" class="w-full px-4 py-2.5 border border-slate-200 rounded-xl text-sm focus:outline-none bg-white">
+                            <option value="TBD">Belum Diputuskan</option>
+                            <option value="DIPILIH">DIPILIH (Deal)</option>
+                            <option value="Alternatif">Alternatif</option>
+                            <option value="Ditolak">Ditolak</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+            <div class="bg-slate-50 px-6 py-4 flex justify-end space-x-3">
+                <button onclick="closeModal('modal-add-vendor')" class="px-4 py-2 rounded-xl text-xs font-bold text-slate-500 hover:bg-slate-100">Batal</button>
+                <button onclick="saveVendorData()" class="bg-gold-500 hover:bg-gold-600 text-white font-bold text-xs px-5 py-2.5 rounded-xl shadow-sm">Simpan</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL 8: Add/Edit Rundown -->
+    <div id="modal-add-rundown" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm hidden flex items-center justify-center z-50 p-4">
+        <div class="bg-white rounded-3xl w-full max-w-lg shadow-xl overflow-hidden">
+            <div class="bg-gold-500 text-white px-6 py-4 flex justify-between items-center">
+                <h4 class="font-serif font-bold text-lg" id="rundown-modal-title"><i class="fa-solid fa-plus mr-2"></i> Tambah Acara Hari-H</h4>
+                <button onclick="closeModal('modal-add-rundown')" class="text-white hover:text-slate-200"><i class="fa-solid fa-xmark text-xl"></i></button>
+            </div>
+            <input type="hidden" id="input-rundown-id">
+            <div class="p-6 space-y-4">
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs font-bold text-slate-500 uppercase mb-1.5">Waktu Mulai (WIB)</label>
+                        <input id="input-r-time" type="text" class="w-full px-4 py-2.5 border border-slate-200 rounded-xl text-sm focus:outline-none" placeholder="08.00 - 09.00">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-500 uppercase mb-1.5">Durasi (Menit)</label>
+                        <input id="input-r-duration" type="number" class="w-full px-4 py-2.5 border border-slate-200 rounded-xl text-sm focus:outline-none" placeholder="60">
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-slate-500 uppercase mb-1.5">Aktivitas / Nama Acara</label>
+                    <input id="input-r-activity" type="text" class="w-full px-4 py-2.5 border border-slate-200 rounded-xl text-sm focus:outline-none" placeholder="Prosesi Akad Nikah">
+                </div>
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs font-bold text-slate-500 uppercase mb-1.5">PIC / Penanggung Jawab</label>
+                        <input id="input-r-pic" type="text" class="w-full px-4 py-2.5 border border-slate-200 rounded-xl text-sm focus:outline-none" placeholder="Seksi Acara / WO">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-500 uppercase mb-1.5">Pihak Terlibat</label>
+                        <input id="input-r-involved" type="text" class="w-full px-4 py-2.5 border border-slate-200 rounded-xl text-sm focus:outline-none" placeholder="Kedua Catin, Wali, Penghulu">
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-slate-500 uppercase mb-1.5">Perlengkapan & Catatan Lapangan</label>
+                    <textarea id="input-r-notes" rows="2" class="w-full px-4 py-2.5 border border-slate-200 rounded-xl text-sm focus:outline-none" placeholder="Siapkan mas kawin, meja akad, mic dan sound system prima"></textarea>
+                </div>
+            </div>
+            <div class="bg-slate-50 px-6 py-4 flex justify-end space-x-3">
+                <button onclick="closeModal('modal-add-rundown')" class="px-4 py-2 rounded-xl text-xs font-bold text-slate-500 hover:bg-slate-100">Batal</button>
+                <button onclick="saveRundownData()" class="bg-gold-500 hover:bg-gold-600 text-white font-bold text-xs px-5 py-2.5 rounded-xl shadow-sm">Simpan</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Floating Toast Notification System -->
+    <div class="fixed bottom-6 right-6 z-50 space-y-3" id="toast-container"></div>
+
+    <!-- FOOTER -->
+    <footer class="bg-white border-t border-gold-100 py-6 mt-12 text-center text-xs text-slate-400 font-medium">
+        <p>&copy; 2026 Master Wedding Planner & System Architecture. Hak Cipta Dilindungi.</p>
+    </footer>
+
+    <!-- Firebase SDK Modules -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInAnonymously, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, doc, setDoc, getDoc, updateDoc, deleteDoc, onSnapshot, collection } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        // Global Configurations
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'realtime-wedding-planner-001';
+        
+        // ==========================================
+        // SILAKAN PASTE KONFIGURASI FIREBASE ANDA DI SINI
+        // Agar bisa diakses secara real-time antar handphone
+        // ==========================================
+        const yourFirebaseConfig = {
+            apiKey: "",
+            authDomain: "",
+            projectId: "",
+            storageBucket: "",
+            messagingSenderId: "",
+            appId: ""
+        };
+
+        // Fallback checks
+        let firebaseConfig = {};
+        if (typeof __firebase_config !== 'undefined' && __firebase_config) {
+            try { firebaseConfig = JSON.parse(__firebase_config); } catch (e) { console.error("Gagal parsing __firebase_config", e); }
+        } else if (yourFirebaseConfig.apiKey !== "") {
+            firebaseConfig = yourFirebaseConfig;
+        }
+
+        // State Store
+        let state = {
+            metadata: {
+                coupleNames: "Romeo & Juliet",
+                weddingDate: "2026-10-24",
+                weddingVenue: "Luxury Hall Room, Jakarta",
+                targetGuests: 500,
+                colors: { primary: '#FFFFFF', secondary: '#D4AF37', accent: '#800020' },
+                maxBudget: 250000000
+            },
+            legal: [],
+            committee: [],
+            budget: [],
+            timeline: [],
+            vendors: [],
+            guests: [],
+            rundown: [],
+            emergency: []
+        };
+
+        let isFirebaseActive = false;
+        let db, auth;
+
+        // Local Storage Sync (Mencegah Kehilangan Data di Mode Offline)
+        const loadFromLocalStorage = () => {
+            const savedState = localStorage.getItem('wedding_planner_state');
+            if (savedState) {
+                try {
+                    state = JSON.parse(savedState);
+                } catch (e) {
+                    console.error("Gagal memuat local storage data.", e);
+                }
+            } else {
+                // Seed default data
+                state.budget = [
+                    { id: 'b1', category: '1. Venue & Akad', target: 50000000, real: 48000000, status: 'Lunas', notes: 'Termasuk sewa ruang rias & izin keramaian.' },
+                    { id: 'b2', category: '2. Catering (500 Pax)', target: 80000000, real: 85000000, status: 'DP 50%', notes: 'Ada penambahan 50 porsi gubukan pondokan.' },
+                    { id: 'b3', category: '3. Dekorasi', target: 30000000, real: 30000000, status: 'DP 30%', notes: 'Pelunasan H-14. Tema modern botanical.' }
+                ];
+                state.guests = [
+                    { id: 'g1', name: 'Bpk. Dr. H. Ahmad Wijaya', category: 'VVIP', rsvp: 'CONFIRMED', pax: 2, notes: 'Meja VIP Depan Panggung' },
+                    { id: 'g2', name: 'Sdr. Rian Pratama', category: 'Regular', rsvp: 'CONFIRMED', pax: 2, notes: 'Kursi Area Belakang' }
+                ];
+                state.timeline = [
+                    { id: 't1', phase: 'H-9', desc: 'Menentukan estimasi jumlah tamu & plafon anggaran maksimal', pic: 'Catin & Keluarga', done: false, notes: 'Batas maksimal Rp 250 Juta' },
+                    { id: 't2', phase: 'H-6', desc: 'Kurasi & booking vendor Katering (wajib food tasting)', pic: 'Sie Konsumsi', done: false, notes: 'Minimal bandingkan 2 vendor' }
+                ];
+                state.legal = [
+                    { id: 'l1', document: 'Fotokopi KTP & KK Catin & Orang Tua (3 Lembar)', done: false, deadline: 'H-90', pic: 'Catin', notes: 'Fotokopi jelas & terbaca' }
+                ];
+                state.committee = [
+                    { id: 'c1', role: 'Ketua Panitia', name: 'Bpk. Ahmad Wijaya', phone: '08123456789', duty: 'Mengoordinasi seluruh seksi panitia.' }
+                ];
+                state.rundown = [
+                    { id: 'r1', time: '07.30 - 08.30', duration: 60, activity: 'PROSESI AKAD NIKAH', pic: 'WO', involved: 'Catin, Wali', notes: 'Buku nikah, mahar.' }
+                ];
+                state.emergency = [
+                    { id: 'e1', category: 'Medis', item: 'Parasetamol', count: '1 Strip', pic: 'WO', notes: 'Mencegah pusing', done: false }
+                ];
+                saveToLocalStorage();
+            }
+        };
+
+        const saveToLocalStorage = () => {
+            localStorage.setItem('wedding_planner_state', JSON.stringify(state));
+        };
+
+        // Display Alert / Toast Notification
+        window.showNotification = function(title, message, type = 'success') {
+            const container = document.getElementById('toast-container');
+            if (!container) return;
+            const toast = document.createElement('div');
+            toast.className = `flex items-start gap-3 p-4 rounded-2xl shadow-xl border text-sm max-w-sm transition-all duration-300 translate-y-2 opacity-0 animate-fade-in ${
+                type === 'success' ? 'bg-emerald-50 border-emerald-200 text-emerald-800' :
+                type === 'error' ? 'bg-red-50 border-red-200 text-red-800' :
+                'bg-blue-50 border-blue-200 text-blue-800'
+            }`;
+            
+            const icon = type === 'success' ? 'fa-solid fa-circle-check text-emerald-600' :
+                         type === 'error' ? 'fa-solid fa-triangle-exclamation text-red-600' :
+                         'fa-solid fa-circle-info text-blue-600';
+
+            toast.innerHTML = `
+                <i class="${icon} text-lg shrink-0 mt-0.5"></i>
+                <div>
+                    <h6 class="font-bold">${title}</h6>
+                    <p class="text-xs opacity-90 mt-0.5">${message}</p>
+                </div>
+            `;
+            container.appendChild(toast);
+            
+            setTimeout(() => { toast.classList.remove('translate-y-2', 'opacity-0'); }, 50);
+            setTimeout(() => {
+                toast.classList.add('translate-y-2', 'opacity-0');
+                setTimeout(() => toast.remove(), 300);
+            }, 3000);
+        };
+
+        // UI Tabs Navigator
+        window.switchTab = function(tabName) {
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+            const activeTab = document.getElementById(`tab-${tabName}`);
+            if (activeTab) {
+                activeTab.classList.remove('hidden');
+                activeTab.classList.add('block');
+            }
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.className = "tab-btn w-full flex items-center space-x-3 px-4 py-3 rounded-xl text-sm font-semibold transition-all text-slate-600 hover:bg-slate-50 hover:text-slate-900 border border-transparent";
+            });
+            const activeBtn = document.getElementById(`btn-tab-${tabName}`);
+            if (activeBtn) {
+                activeBtn.className = "tab-btn w-full flex items-center space-x-3 px-4 py-3 rounded-xl text-sm font-semibold transition-all bg-gold-50 text-gold-700 border border-gold-100 shadow-sm";
+            }
+        };
+
+        // Real-Time Listener Setup (Firestore) - RULE 3: Guard every listener, check errors
+        const startRealTimeListeners = () => {
+            const statusDot = document.getElementById('status-dot');
+            const statusText = document.getElementById('status-text');
+
+            if (!auth.currentUser) {
+                console.error("Autentikasi belum lengkap. Mengabaikan listeners.");
+                return;
+            }
+
+            // Listening to Wedding metadata info
+            onSnapshot(doc(db, 'artifacts', appId, 'public', 'data', 'info', 'wedding_config'), (snap) => {
+                if (snap.exists()) { 
+                    state.metadata = snap.data(); 
+                    renderMetadata(); 
+                    calculateMetrics(); 
+                }
+            }, (error) => {
+                console.warn("Gagal listen ke metadata wedding_config:", error);
+            });
+
+            // Listening collections with explicit error callback (Rule 3)
+            const collectionsList = ['budget', 'guests', 'timeline', 'legal', 'committee', 'rundown', 'emergency'];
+            collectionsList.forEach(col => {
+                onSnapshot(collection(db, 'artifacts', appId, 'public', 'data', col), (snap) => {
+                    state[col] = [];
+                    snap.forEach(docSnap => state[col].push(docSnap.data()));
+                    renderAll();
+                    calculateMetrics();
+                }, (error) => {
+                    console.warn(`Gagal listen ke collection ${col}:`, error);
+                });
+            });
+
+            if (statusDot && statusText) {
+                statusDot.className = "relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500";
+                statusText.innerText = "Terhubung (Live Awan)";
+                document.getElementById('sync-status').className = "flex items-center space-x-2 bg-emerald-50 text-emerald-700 px-3.5 py-1.5 rounded-full text-xs font-semibold border border-emerald-200 shadow-sm";
+                document.getElementById('collaboration-helper-text').innerText = "Bagikan tautan browser ini ke tim panitia atau keluarga. Semua data tersinkronisasi instan!";
+            }
+        };
+
+        // Initialize App Connection - RULE 3: Auth FIRST and AWAIT it
+        const initFirebase = async () => {
+            // Cek jika dibuka menggunakan protokol file:// di Chrome
+            if (window.location.protocol === 'file:') {
+                document.getElementById('security-warning').classList.remove('hidden');
+            }
+
+            if (Object.keys(firebaseConfig).length === 0) {
+                console.warn("Firebase tidak terkonfigurasi. Berjalan dalam mode Local Storage.");
+                setLocalFallbackMode();
+                return;
+            }
+
+            try {
+                const app = initializeApp(firebaseConfig);
+                db = getFirestore(app);
+                auth = getAuth(app);
+
+                // RULE 3: Sign in FIRST and wait for promise resolution
+                if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+                    await signInWithCustomToken(auth, __initial_auth_token);
+                } else {
+                    await signInAnonymously(auth);
+                }
+
+                // Amankan state Firebase aktif hanya setelah login sukses
+                isFirebaseActive = true;
+                startRealTimeListeners();
+            } catch (err) {
+                console.error("Gagal tersambung ke server cloud. Menggunakan fallback lokal.", err);
+                setLocalFallbackMode();
+            }
+        };
+
+        const setLocalFallbackMode = () => {
+            const statusDot = document.getElementById('status-dot');
+            const statusText = document.getElementById('status-text');
+            if (statusDot && statusText) {
+                statusDot.className = "relative inline-flex rounded-full h-2.5 w-2.5 bg-amber-500";
+                statusText.innerText = "Mode Offline (Data Tersimpan)";
+                document.getElementById('sync-status').className = "flex items-center space-x-2 bg-amber-50 text-amber-700 px-3.5 py-1.5 rounded-full text-xs font-semibold border border-amber-200 shadow-sm";
+            }
+            loadFromLocalStorage();
+            renderAll();
+            calculateMetrics();
+        };
+
+        // Render Functions
+        const renderAll = () => {
+            renderMetadata();
+            renderBudget();
+            renderGuests();
+            renderTimeline();
+            renderLegal();
+            renderCommittee();
+            renderRundown();
+            renderEmergency();
+        };
+
+        // Format Currency Helper
+        const formatRupiah = (number) => {
+            return new Intl.NumberFormat('id-ID', {
+                style: 'currency',
+                currency: 'IDR',
+                minimumFractionDigits: 0,
+                maximumFractionDigits: 0
+            }).format(number);
+        };
+
+        // Countdown Calculator
+        const calculateCountdown = (targetDate) => {
+            const today = new Date();
+            const wedding = new Date(targetDate);
+            const timeDiff = wedding - today;
+            const daysDiff = Math.ceil(timeDiff / (1000 * 60 * 60 * 24));
+            
+            const countdownEl = document.getElementById('countdown-days');
+            const countdownStatusEl = document.getElementById('countdown-status');
+
+            if (!countdownEl || !countdownStatusEl) return;
+
+            if (isNaN(daysDiff)) {
+                countdownEl.innerText = "---";
+                countdownStatusEl.innerText = "Tanggal belum diatur";
+            } else if (daysDiff > 0) {
+                countdownEl.innerText = `${daysDiff} Hari`;
+                countdownStatusEl.innerText = "Lagi Menuju Bahagia";
+            } else if (daysDiff === 0) {
+                countdownEl.innerText = "HARI-H!";
+                countdownStatusEl.innerText = "Semoga Lancar & Sakinah";
+            } else {
+                countdownEl.innerText = `${Math.abs(daysDiff)} Hari`;
+                countdownStatusEl.innerText = "Sudah Berlalu (Sakinah)";
+            }
+        };
+
+        // Calculate metrics
+        const calculateMetrics = () => {
+            const maxBudget = state.metadata.maxBudget || 250000000;
+            const totalSpending = state.budget.reduce((acc, curr) => acc + (curr.real || 0), 0);
+            const budgetPercent = Math.min(100, Math.round((totalSpending / maxBudget) * 100)) || 0;
+
+            const spendingEl = document.getElementById('dash-total-spending');
+            const progressEl = document.getElementById('dash-budget-progress');
+            const percentEl = document.getElementById('dash-budget-percent');
+
+            if (spendingEl) spendingEl.innerText = formatRupiah(totalSpending);
+            if (progressEl) progressEl.style.width = `${budgetPercent}%`;
+            if (percentEl) percentEl.innerText = `${budgetPercent}%`;
+
+            const sumTargetEl = document.getElementById('budget-sum-target');
+            const sumRealizationEl = document.getElementById('budget-sum-realization');
+
+            if (sumTargetEl) sumTargetEl.innerText = formatRupiah(maxBudget);
+            if (sumRealizationEl) sumRealizationEl.innerText = formatRupiah(totalSpending);
+            
+            const diffValue = maxBudget - totalSpending;
+            const diffEl = document.getElementById('budget-sum-diff');
+            if (diffEl) {
+                diffEl.innerText = formatRupiah(diffValue);
+                diffEl.className = diffValue >= 0 ? "text-2xl font-bold text-emerald-600 mt-2" : "text-2xl font-bold text-red-600 mt-2";
+            }
+
+            const totalChecklist = state.timeline.length;
+            const finishedChecklist = state.timeline.filter(t => t.done).length;
+            const checklistPercent = Math.round((finishedChecklist / totalChecklist) * 100) || 0;
+
+            const checklistCountEl = document.getElementById('dash-checklist-count');
+            const checklistProgressEl = document.getElementById('dash-checklist-progress');
+            const checklistPercentEl = document.getElementById('dash-checklist-percent');
+
+            if (checklistCountEl) checklistCountEl.innerText = `${finishedChecklist} / ${totalChecklist}`;
+            if (checklistProgressEl) checklistProgressEl.style.width = `${checklistPercent}%`;
+            if (checklistPercentEl) checklistPercentEl.innerText = `${checklistPercent}%`;
+
+            const targetGuests = state.metadata.targetGuests || 500;
+            const confirmedPax = state.guests.reduce((acc, curr) => curr.rsvp === 'CONFIRMED' ? acc + (Number(curr.pax) || 0) : acc, 0);
+            const rsvpPercent = Math.round((confirmedPax / targetGuests) * 100) || 0;
+
+            const rsvpConfirmedEl = document.getElementById('dash-rsvp-confirmed');
+            const rsvpProgressEl = document.getElementById('dash-rsvp-progress');
+            const rsvpPercentEl = document.getElementById('dash-rsvp-percent');
+            const targetGuestsEl = document.getElementById('view-target-guests');
+            const totalPaxCountEl = document.getElementById('total-pax-count');
+
+            if (rsvpConfirmedEl) rsvpConfirmedEl.innerText = `${confirmedPax} Pax`;
+            if (rsvpProgressEl) rsvpProgressEl.style.width = `${Math.min(100, rsvpPercent)}%`;
+            if (rsvpPercentEl) rsvpPercentEl.innerText = `${rsvpPercent}%`;
+            if (targetGuestsEl) targetGuestsEl.innerText = `${targetGuests} Pax`;
+            if (totalPaxCountEl) totalPaxCountEl.innerText = `${confirmedPax} Pax`;
+        };
+
+        const renderMetadata = () => {
+            const coupleNamesEl = document.getElementById('view-couple-names');
+            const weddingDateEl = document.getElementById('view-wedding-date');
+            const weddingVenueEl = document.getElementById('view-wedding-venue');
+
+            if (coupleNamesEl) coupleNamesEl.innerText = state.metadata.coupleNames || "Romeo & Juliet";
+            
+            if (weddingDateEl) {
+                const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+                const formattedDate = new Date(state.metadata.weddingDate).toLocaleDateString('id-ID', options);
+                weddingDateEl.innerText = formattedDate;
+            }
+            if (weddingVenueEl) weddingVenueEl.innerText = state.metadata.weddingVenue;
+
+            const colors = state.metadata.colors || { primary: '#FFFFFF', secondary: '#D4AF37', accent: '#800020' };
+            
+            const blockP = document.getElementById('color-block-primary');
+            const hexP = document.getElementById('color-hex-primary');
+            const inputP = document.getElementById('color-input-primary');
+            if (blockP && hexP && inputP) {
+                blockP.style.backgroundColor = colors.primary;
+                hexP.innerText = colors.primary.toUpperCase();
+                inputP.value = colors.primary;
+            }
+
+            const blockS = document.getElementById('color-block-secondary');
+            const hexS = document.getElementById('color-hex-secondary');
+            const inputS = document.getElementById('color-input-secondary');
+            if (blockS && hexS && inputS) {
+                blockS.style.backgroundColor = colors.secondary;
+                hexS.innerText = colors.secondary.toUpperCase();
+                inputS.value = colors.secondary;
+            }
+
+            const blockA = document.getElementById('color-block-accent');
+            const hexA = document.getElementById('color-hex-accent');
+            const inputA = document.getElementById('color-input-accent');
+            if (blockA && hexA && inputA) {
+                blockA.style.backgroundColor = colors.accent;
+                hexA.innerText = colors.accent.toUpperCase();
+                inputA.value = colors.accent;
+            }
+
+            calculateCountdown(state.metadata.weddingDate);
+        };
+
+        window.openWeddingConfigModal = () => {
+            document.getElementById('input-couple-names').value = state.metadata.coupleNames;
+            document.getElementById('input-wedding-date').value = state.metadata.weddingDate;
+            document.getElementById('input-wedding-venue').value = state.metadata.weddingVenue;
+            document.getElementById('input-target-guests').value = state.metadata.targetGuests;
+            document.getElementById('modal-wedding-config').classList.remove('hidden');
+        };
+
+        window.saveWeddingConfig = async () => {
+            const names = document.getElementById('input-couple-names').value;
+            const date = document.getElementById('input-wedding-date').value;
+            const venue = document.getElementById('input-wedding-venue').value;
+            const target = Number(document.getElementById('input-target-guests').value) || 500;
+
+            if (isFirebaseActive) {
+                await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'info', 'wedding_config'), {
+                    ...state.metadata,
+                    coupleNames: names,
+                    weddingDate: date,
+                    weddingVenue: venue,
+                    targetGuests: target
+                }, { merge: true });
+            } else {
+                state.metadata.coupleNames = names;
+                state.metadata.weddingDate = date;
+                state.metadata.weddingVenue = venue;
+                state.metadata.targetGuests = target;
+                saveToLocalStorage();
+                renderMetadata();
+                calculateMetrics();
+            }
+
+            closeModal('modal-wedding-config');
+            showNotification("Data Disimpan", "Informasi Pernikahan berhasil diperbarui.", "success");
+        };
+
+        window.openTargetBudgetModal = () => {
+            document.getElementById('input-max-budget').value = state.metadata.maxBudget || 250000000;
+            document.getElementById('modal-target-budget').classList.remove('hidden');
+        };
+
+        window.saveMaxBudget = async () => {
+            const maxVal = Number(document.getElementById('input-max-budget').value) || 250000000;
+            if (isFirebaseActive) {
+                await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'info', 'wedding_config'), { maxBudget: maxVal }, { merge: true });
+            } else {
+                state.metadata.maxBudget = maxVal;
+                saveToLocalStorage();
+                calculateMetrics();
+            }
+            closeModal('modal-target-budget');
+            showNotification("Target Diperbarui", "Plafon target anggaran telah berhasil diperbarui.", "success");
+        };
+
+        window.updateColors = async () => {
+            const primary = document.getElementById('color-input-primary').value;
+            const secondary = document.getElementById('color-input-secondary').value;
+            const accent = document.getElementById('color-input-accent').value;
+
+            if (isFirebaseActive) {
+                await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'info', 'wedding_config'), {
+                    colors: { primary, secondary, accent }
+                }, { merge: true });
+            } else {
+                state.metadata.colors = { primary, secondary, accent };
+                saveToLocalStorage();
+                renderMetadata();
+            }
+            showNotification("Palet Warna", "Konsistensi warna berhasil disimpan.", "success");
+        };
+
+        const renderBudget = () => {
+            const tbody = document.getElementById('budget-table-body');
+            if (!tbody) return;
+            tbody.innerHTML = '';
+
+            state.budget.sort((a, b) => a.category.localeCompare(b.category)).forEach(item => {
+                const diff = (item.real || 0) - (item.target || 0);
+                const diffText = diff === 0 ? "0" : (diff > 0 ? `+${formatRupiah(diff)}` : `-${formatRupiah(Math.abs(diff))}`);
+                const diffClass = diff === 0 ? "text-slate-500" : (diff > 0 ? "text-red-600 font-semibold" : "text-emerald-600 font-semibold");
+
+                const tr = document.createElement('tr');
+                tr.className = "hover:bg-slate-50/70 transition-colors";
+                tr.innerHTML = `
+                    <td class="py-4 px-4 font-semibold text-slate-700">${item.category}</td>
+                    <td class="py-4 px-4 text-right font-medium text-slate-600">${formatRupiah(item.target || 0)}</td>
+                    <td class="py-4 px-4 text-right font-semibold text-slate-800">${formatRupiah(item.real || 0)}</td>
+                    <td class="py-4 px-4 text-right ${diffClass}">${diffText}</td>
+                    <td class="py-4 px-4 text-center">
+                        <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-bold ${
+                            item.status === 'Lunas' ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' :
+                            item.status === 'Dialokasikan' ? 'bg-blue-50 text-blue-700 border border-blue-200' :
+                            'bg-amber-50 text-amber-700 border border-amber-200'
+                        }">${item.status}</span>
+                    </td>
+                    <td class="py-4 px-4 text-slate-500 text-xs">${item.notes || '-'}</td>
+                    <td class="py-4 px-4 text-center">
+                        <div class="flex items-center justify-center space-x-2">
+                            <button onclick="editBudget('${item.id}')" class="p-1 text-slate-400 hover:text-gold-600"><i class="fa-solid fa-pen"></i></button>
+                            <button onclick="deleteBudget('${item.id}')" class="p-1 text-slate-400 hover:text-red-500"><i class="fa-solid fa-trash-can"></i></button>
+                        </div>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        };
+
+        window.openAddBudgetModal = () => {
+            document.getElementById('budget-modal-title').innerHTML = '<i class="fa-solid fa-plus mr-2"></i> Tambah Pos Vendor Baru';
+            document.getElementById('input-budget-id').value = '';
+            document.getElementById('input-budget-category').value = '';
+            document.getElementById('input-budget-target').value = '';
+            document.getElementById('input-budget-real').value = '';
+            document.getElementById('input-budget-notes').value = '';
+            document.getElementById('modal-add-budget').classList.remove('hidden');
+        };
+
+        window.editBudget = (id) => {
+            const item = state.budget.find(b => b.id === id);
+            if (!item) return;
+
+            document.getElementById('budget-modal-title').innerHTML = '<i class="fa-solid fa-pen mr-2"></i> Edit Pos Vendor';
+            document.getElementById('input-budget-id').value = item.id;
+            document.getElementById('input-budget-category').value = item.category;
+            document.getElementById('input-budget-target').value = item.target;
+            document.getElementById('input-budget-real').value = item.real;
+            document.getElementById('input-budget-status').value = item.status;
+            document.getElementById('input-budget-notes').value = item.notes;
+            document.getElementById('modal-add-budget').classList.remove('hidden');
+        };
+
+        window.saveBudgetData = async () => {
+            const id = document.getElementById('input-budget-id').value || crypto.randomUUID();
+            const category = document.getElementById('input-budget-category').value;
+            const target = Number(document.getElementById('input-budget-target').value) || 0;
+            const real = Number(document.getElementById('input-budget-real').value) || 0;
+            const status = document.getElementById('input-budget-status').value;
+            const notes = document.getElementById('input-budget-notes').value;
+
+            if (!category) {
+                showNotification("Gagal", "Nama Kategori Vendor wajib diisi.", "error");
+                return;
+            }
+
+            const data = { id, category, target, real, status, notes };
+
+            if (isFirebaseActive) {
+                await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'budget', id), data);
+            } else {
+                const idx = state.budget.findIndex(b => b.id === id);
+                if (idx > -1) state.budget[idx] = data;
+                else state.budget.push(data);
+                saveToLocalStorage();
+                renderBudget();
+                calculateMetrics();
+            }
+
+            closeModal('modal-add-budget');
+            showNotification("Data Berhasil", "Pos Anggaran Vendor berhasil disimpan.", "success");
+        };
+
+        window.deleteBudget = async (id) => {
+            if (isFirebaseActive) {
+                await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'budget', id));
+            } else {
+                state.budget = state.budget.filter(b => b.id !== id);
+                saveToLocalStorage();
+                renderBudget();
+                calculateMetrics();
+            }
+            showNotification("Data Terhapus", "Satu pos anggaran berhasil dihapus.", "success");
+        };
+
+        const renderLegal = () => {
+            const tbody = document.getElementById('legal-table-body');
+            if (!tbody) return;
+            tbody.innerHTML = '';
+
+            state.legal.forEach(item => {
+                const tr = document.createElement('tr');
+                tr.className = "hover:bg-slate-50/70 transition-colors";
+                tr.innerHTML = `
+                    <td class="py-3 px-4 text-center">
+                        <input onchange="toggleLegalCheck('${item.id}', this.checked)" type="checkbox" ${item.done ? 'checked' : ''} class="w-4 h-4 text-gold-600 border-slate-300 rounded focus:ring-gold-500 cursor-pointer">
+                    </td>
+                    <td class="py-3 px-4 font-semibold text-slate-700 ${item.done ? 'line-through text-slate-400' : ''}">${item.document}</td>
+                    <td class="py-3 px-4 text-center text-xs text-red-600 font-bold bg-red-50/50 rounded-lg">${item.deadline || '-'}</td>
+                    <td class="py-3 px-4 font-medium text-slate-600 text-xs">${item.pic || '-'}</td>
+                    <td class="py-3 px-4 text-slate-400 text-xs">${item.notes || '-'}</td>
+                `;
+                tbody.appendChild(tr);
+            });
+        };
+
+        window.toggleLegalCheck = async (id, isChecked) => {
+            if (isFirebaseActive) {
+                await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'legal', id), { done: isChecked });
+            } else {
+                const idx = state.legal.findIndex(l => l.id === id);
+                if (idx > -1) state.legal[idx].done = isChecked;
+                saveToLocalStorage();
+                renderLegal();
+            }
+            showNotification("Ceklis Berubah", "Status kelengkapan dokumen diperbarui.", "success");
+        };
+
+        const renderCommittee = () => {
+            const tbody = document.getElementById('committee-table-body');
+            if (!tbody) return;
+            tbody.innerHTML = '';
+
+            state.committee.forEach(item => {
+                const tr = document.createElement('tr');
+                tr.className = "hover:bg-slate-50/70 transition-colors";
+                tr.innerHTML = `
+                    <td class="py-4 px-4 font-bold text-slate-700">${item.role}</td>
+                    <td class="py-4 px-4 font-semibold text-slate-800">${item.name}</td>
+                    <td class="py-4 px-4">
+                        <a href="https://wa.me/${item.phone.replace(/[^0-9]/g, '')}" target="_blank" class="inline-flex items-center space-x-1.5 text-emerald-600 hover:text-emerald-700 font-bold text-xs bg-emerald-50 px-2.5 py-1 rounded-full border border-emerald-100">
+                            <i class="fa-brands fa-whatsapp text-sm"></i>
+                            <span>${item.phone}</span>
+                        </a>
+                    </td>
+                    <td class="py-4 px-4 text-xs text-slate-500 leading-relaxed">${item.duty || '-'}</td>
+                    <td class="py-4 px-4 text-center">
+                        <div class="flex items-center justify-center space-x-2">
+                            <button onclick="editCommittee('${item.id}')" class="p-1 text-slate-400 hover:text-gold-600"><i class="fa-solid fa-pen"></i></button>
+                            <button onclick="deleteCommittee('${item.id}')" class="p-1 text-slate-400 hover:text-red-500"><i class="fa-solid fa-trash-can"></i></button>
+                        </div>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        };
+
+        window.openAddCommitteeModal = () => {
+            document.getElementById('committee-modal-title').innerHTML = '<i class="fa-solid fa-user-plus mr-2"></i> Tambah Struktur Panitia';
+            document.getElementById('input-committee-id').value = '';
+            document.getElementById('input-comm-role').value = '';
+            document.getElementById('input-comm-name').value = '';
+            document.getElementById('input-comm-phone').value = '';
+            document.getElementById('input-comm-duty').value = '';
+            document.getElementById('modal-add-committee').classList.remove('hidden');
+        };
+
+        window.editCommittee = (id) => {
+            const item = state.committee.find(c => c.id === id);
+            if (!item) return;
+
+            document.getElementById('committee-modal-title').innerHTML = '<i class="fa-solid fa-pen mr-2"></i> Edit Struktur Panitia';
+            document.getElementById('input-committee-id').value = item.id;
+            document.getElementById('input-comm-role').value = item.role;
+            document.getElementById('input-comm-name').value = item.name;
+            document.getElementById('input-comm-phone').value = item.phone;
+            document.getElementById('input-comm-duty').value = item.duty;
+            document.getElementById('modal-add-committee').classList.remove('hidden');
+        };
+
+        window.saveCommitteeData = async () => {
+            const id = document.getElementById('input-committee-id').value || crypto.randomUUID();
+            const role = document.getElementById('input-comm-role').value;
+            const name = document.getElementById('input-comm-name').value;
+            const phone = document.getElementById('input-comm-phone').value;
+            const duty = document.getElementById('input-comm-duty').value;
+
+            if (!role || !name) {
+                showNotification("Gagal", "Nama Personel dan Peran Utama wajib diisi.", "error");
+                return;
+            }
+
+            const data = { id, role, name, phone, duty };
+
+            if (isFirebaseActive) {
+                await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'committee', id), data);
+            } else {
+                const idx = state.committee.findIndex(c => c.id === id);
+                if (idx > -1) state.committee[idx] = data;
+                else state.committee.push(data);
+                saveToLocalStorage();
+                renderCommittee();
+            }
+
+            closeModal('modal-add-committee');
+            showNotification("Struktur Diupdate", "Anggota panitia keluarga berhasil diperbarui.", "success");
+        };
+
+        window.deleteCommittee = async (id) => {
+            if (isFirebaseActive) {
+                await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'committee', id));
+            } else {
+                state.committee = state.committee.filter(c => c.id !== id);
+                saveToLocalStorage();
+                renderCommittee();
+            }
+            showNotification("Panitia Dihapus", "Anggota panitia dikeluarkan dari struktur.", "success");
+        };
+
+        let currentTimelineFilter = 'all';
+        window.filterTimeline = (phase) => {
+            currentTimelineFilter = phase;
+            document.querySelectorAll('.timeline-nav-btn').forEach(btn => {
+                btn.className = "timeline-nav-btn px-4 py-2 rounded-xl text-xs font-semibold text-slate-600 hover:bg-slate-50 transition-all";
+            });
+            if (event && event.target) {
+                event.target.className = "timeline-nav-btn px-4 py-2 rounded-xl text-xs font-semibold bg-gold-500 text-white shadow-sm transition-all";
+            }
+            renderTimeline();
+        };
+
+        const renderTimeline = () => {
+            const tbody = document.getElementById('timeline-table-body');
+            if (!tbody) return;
+            tbody.innerHTML = '';
+
+            const filtered = currentTimelineFilter === 'all' 
+                ? state.timeline 
+                : state.timeline.filter(t => t.phase === currentTimelineFilter);
+
+            const phaseOrder = { 'H-9': 1, 'H-6': 2, 'H-3': 3, 'H-1M': 4, 'H-1W': 5 };
+            filtered.sort((a, b) => (phaseOrder[a.phase] || 9) - (phaseOrder[b.phase] || 9)).forEach(item => {
+                const tr = document.createElement('tr');
+                tr.className = "hover:bg-slate-50/70 transition-colors";
+                tr.innerHTML = `
+                    <td class="py-3 px-4 text-center">
+                        <input onchange="toggleTimelineCheck('${item.id}', this.checked)" type="checkbox" ${item.done ? 'checked' : ''} class="w-4 h-4 text-gold-600 border-slate-300 rounded focus:ring-gold-500 cursor-pointer">
+                    </td>
+                    <td class="py-3 px-4 text-center">
+                        <span class="inline-flex px-2 py-1 rounded bg-slate-100 text-slate-600 text-[10px] font-bold uppercase tracking-wider">${item.phase}</span>
+                    </td>
+                    <td class="py-3 px-4 font-semibold text-slate-700 ${item.done ? 'line-through text-slate-400' : ''}">${item.desc}</td>
+                    <td class="py-3 px-4 text-xs font-semibold text-slate-500">${item.pic || '-'}</td>
+                    <td class="py-3 px-4 text-slate-400 text-xs">${item.notes || '-'}</td>
+                    <td class="py-3 px-4 text-center">
+                        <div class="flex items-center justify-center space-x-2">
+                            <button onclick="editTimeline('${item.id}')" class="p-1 text-slate-400 hover:text-gold-600"><i class="fa-solid fa-pen text-xs"></i></button>
+                            <button onclick="deleteTimeline('${item.id}')" class="p-1 text-slate-400 hover:text-red-500"><i class="fa-solid fa-trash-can text-xs"></i></button>
+                        </div>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        };
+
+        window.toggleTimelineCheck = async (id, isChecked) => {
+            if (isFirebaseActive) {
+                await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'timeline', id), { done: isChecked });
+            } else {
+                const idx = state.timeline.findIndex(t => t.id === id);
+                if (idx > -1) state.timeline[idx].done = isChecked;
+                saveToLocalStorage();
+                renderTimeline();
+                calculateMetrics();
+            }
+            showNotification("Tugas Selesai", "Status tugas berhasil disinkronkan.", "success");
+        };
+
+        window.openAddTimelineModal = () => {
+            document.getElementById('timeline-modal-title').innerHTML = '<i class="fa-solid fa-calendar-plus mr-2"></i> Tambah Milestone/Tugas';
+            document.getElementById('input-timeline-id').value = '';
+            document.getElementById('input-time-desc').value = '';
+            document.getElementById('input-time-pic').value = '';
+            document.getElementById('input-time-notes').value = '';
+            document.getElementById('modal-add-timeline').classList.remove('hidden');
+        };
+
+        window.editTimeline = (id) => {
+            const item = state.timeline.find(t => t.id === id);
+            if (!item) return;
+
+            document.getElementById('timeline-modal-title').innerHTML = '<i class="fa-solid fa-calendar-check mr-2"></i> Edit Milestone/Tugas';
+            document.getElementById('input-timeline-id').value = item.id;
+            document.getElementById('input-time-phase').value = item.phase;
+            document.getElementById('input-time-desc').value = item.desc;
+            document.getElementById('input-time-pic').value = item.pic;
+            document.getElementById('input-time-notes').value = item.notes;
+            document.getElementById('modal-add-timeline').classList.remove('hidden');
+        };
+
+        window.saveTimelineData = async () => {
+            const id = document.getElementById('input-timeline-id').value || crypto.randomUUID();
+            const phase = document.getElementById('input-time-phase').value;
+            const desc = document.getElementById('input-time-desc').value;
+            const pic = document.getElementById('input-time-pic').value;
+            const notes = document.getElementById('input-time-notes').value;
+
+            if (!desc) {
+                showNotification("Gagal", "Deskripsi Tugas wajib diisi.", "error");
+                return;
+            }
+
+            const data = { id, phase, desc, pic, notes, done: false };
+
+            if (isFirebaseActive) {
+                await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'timeline', id), data);
+            } else {
+                const idx = state.timeline.findIndex(t => t.id === id);
+                if (idx > -1) state.timeline[idx] = data;
+                else state.timeline.push(data);
+                saveToLocalStorage();
+                renderTimeline();
+                calculateMetrics();
+            }
+
+            closeModal('modal-add-timeline');
+            showNotification("Timeline Update", "Item milestone tersimpan.", "success");
+        };
+
+        window.deleteTimeline = async (id) => {
+            if (isFirebaseActive) {
+                await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'timeline', id));
+            } else {
+                state.timeline = state.timeline.filter(t => t.id !== id);
+                saveToLocalStorage();
+                renderTimeline();
+                calculateMetrics();
+            }
+            showNotification("Tugas Dihapus", "Satu item milestone berhasil dihapus.", "success");
+        };
+
+        window.searchGuests = () => { renderGuests(); };
+
+        const renderGuests = () => {
+            const tbody = document.getElementById('guest-table-body');
+            if (!tbody) return;
+            tbody.innerHTML = '';
+
+            const qQuery = document.getElementById('guest-search-input').value.toLowerCase();
+            const filterRSVP = document.getElementById('guest-filter-status').value;
+            const filterCat = document.getElementById('guest-filter-cat').value;
+
+            const filtered = state.guests.filter(item => {
+                const matchesSearch = item.name.toLowerCase().includes(qQuery);
+                const matchesRSVP = filterRSVP === 'all' || item.rsvp === filterRSVP;
+                const matchesCat = filterCat === 'all' || item.category === filterCat;
+                return matchesSearch && matchesRSVP && matchesCat;
+            });
+
+            filtered.sort((a, b) => a.name.localeCompare(b.name)).forEach((item, index) => {
+                const tr = document.createElement('tr');
+                tr.className = "hover:bg-slate-50/70 transition-colors";
+                tr.innerHTML = `
+                    <td class="py-3 px-4 text-center font-bold text-slate-400 text-xs">${index + 1}</td>
+                    <td class="py-3 px-4 font-semibold text-slate-700">${item.name}</td>
+                    <td class="py-3 px-4 text-center">
+                        <span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold ${
+                            item.category === 'VVIP' ? 'bg-burgundy-50 text-burgundy-700 border border-burgundy-200' :
+                            item.category === 'VIP' ? 'bg-amber-50 text-amber-700 border border-amber-200' :
+                            'bg-slate-100 text-slate-600'
+                        }">${item.category}</span>
+                    </td>
+                    <td class="py-3 px-4 text-center">
+                        <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-bold ${
+                            item.rsvp === 'CONFIRMED' ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' :
+                            item.rsvp === 'DECLINED' ? 'bg-red-50 text-red-700 border border-red-200' :
+                            'bg-slate-50 text-slate-400 border border-slate-200'
+                        }">${item.rsvp}</span>
+                    </td>
+                    <td class="py-3 px-4 text-center font-bold text-slate-800">${item.pax || 0}</td>
+                    <td class="py-3 px-4 text-xs text-slate-400 font-medium">${item.notes || '-'}</td>
+                    <td class="py-3 px-4 text-center">
+                        <div class="flex items-center justify-center space-x-2">
+                            <button onclick="editGuest('${item.id}')" class="p-1 text-slate-400 hover:text-gold-600"><i class="fa-solid fa-pen text-xs"></i></button>
+                            <button onclick="deleteGuest('${item.id}')" class="p-1 text-slate-400 hover:text-red-500"><i class="fa-solid fa-trash-can text-xs"></i></button>
+                        </div>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        };
+
+        window.openAddGuestModal = () => {
+            document.getElementById('guest-modal-title').innerHTML = '<i class="fa-solid fa-user-plus mr-2"></i> Tambah Daftar Tamu';
+            document.getElementById('input-guest-id').value = '';
+            document.getElementById('input-guest-name').value = '';
+            document.getElementById('input-guest-notes').value = '';
+            document.getElementById('input-guest-pax').value = '2';
+            document.getElementById('modal-add-guest').classList.remove('hidden');
+        };
+
+        window.editGuest = (id) => {
+            const item = state.guests.find(g => g.id === id);
+            if (!item) return;
+
+            document.getElementById('guest-modal-title').innerHTML = '<i class="fa-solid fa-user-pen mr-2"></i> Edit Daftar Tamu';
+            document.getElementById('input-guest-id').value = item.id;
+            document.getElementById('input-guest-name').value = item.name;
+            document.getElementById('input-guest-category').value = item.category;
+            document.getElementById('input-guest-rsvp').value = item.rsvp;
+            document.getElementById('input-guest-pax').value = item.pax;
+            document.getElementById('input-guest-notes').value = item.notes;
+            document.getElementById('modal-add-guest').classList.remove('hidden');
+        };
+
+        window.saveGuestData = async () => {
+            const id = document.getElementById('input-guest-id').value || crypto.randomUUID();
+            const name = document.getElementById('input-guest-name').value;
+            const category = document.getElementById('input-guest-category').value;
+            const rsvp = document.getElementById('input-guest-rsvp').value;
+            const pax = Number(document.getElementById('input-guest-pax').value) || 0;
+            const notes = document.getElementById('input-guest-notes').value;
+
+            if (!name) {
+                showNotification("Gagal", "Nama Lengkap Tamu wajib diisi.", "error");
+                return;
+            }
+
+            const data = { id, name, category, rsvp, pax, notes };
+
+            if (isFirebaseActive) {
+                await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'guests', id), data);
+            } else {
+                const idx = state.guests.findIndex(g => g.id === id);
+                if (idx > -1) state.guests[idx] = data;
+                else state.guests.push(data);
+                saveToLocalStorage();
+                renderGuests();
+                calculateMetrics();
+            }
+
+            closeModal('modal-add-guest');
+            showNotification("Tamu Disimpan", "Daftar Tamu & RSVP berhasil disimpan.", "success");
+        };
+
+        window.deleteGuest = async (id) => {
+            if (isFirebaseActive) {
+                await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'guests', id));
+            } else {
+                state.guests = state.guests.filter(g => g.id !== id);
+                saveToLocalStorage();
+                renderGuests();
+                calculateMetrics();
+            }
+            showNotification("Tamu Dihapus", "Satu nama tamu berhasil dihapus.", "success");
+        };
+
+        const renderVendor = () => {
+            const tbody = document.getElementById('vendor-table-body');
+            if (!tbody) return;
+            tbody.innerHTML = '';
+
+            state.vendors.sort((a, b) => a.service.localeCompare(b.service)).forEach(item => {
+                const tr = document.createElement('tr');
+                tr.className = "hover:bg-slate-50/70 transition-colors";
+                tr.innerHTML = `
+                    <td class="py-3 px-4 font-bold text-slate-800">${item.name}</td>
+                    <td class="py-3 px-4 font-semibold text-slate-500">${item.service}</td>
+                    <td class="py-3 px-4 text-center">
+                        <span class="inline-flex px-2 py-1 rounded bg-amber-50 text-amber-700 text-xs font-bold border border-amber-200"><i class="fa-solid fa-star mr-1 mt-0.5"></i> ${item.portfolio} / 10</span>
+                    </td>
+                    <td class="py-3 px-4 text-center">
+                        <span class="inline-flex px-2 py-1 rounded bg-blue-50 text-blue-700 text-xs font-bold border border-blue-200"><i class="fa-solid fa-reply mr-1 mt-0.5"></i> ${item.response} / 10</span>
+                    </td>
+                    <td class="py-3 px-4 text-right font-bold text-slate-700">${formatRupiah(item.price || 0)}</td>
+                    <td class="py-3 px-4 text-xs text-slate-500 leading-relaxed">${item.proscons || '-'}</td>
+                    <td class="py-3 px-4 text-center">
+                        <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-bold ${
+                            item.decision === 'DIPILIH' ? 'bg-emerald-50 text-emerald-700 border border-emerald-200 animate-pulse' :
+                            item.decision === 'Alternatif' ? 'bg-blue-50 text-blue-700 border border-blue-200' :
+                            'bg-slate-100 text-slate-500 border border-slate-200'
+                        }">${item.decision}</span>
+                    </td>
+                    <td class="py-3 px-4 text-center">
+                        <div class="flex items-center justify-center space-x-2">
+                            <button onclick="editVendor('${item.id}')" class="p-1 text-slate-400 hover:text-gold-600"><i class="fa-solid fa-pen text-xs"></i></button>
+                            <button onclick="deleteVendor('${item.id}')" class="p-1 text-slate-400 hover:text-red-500"><i class="fa-solid fa-trash-can text-xs"></i></button>
+                        </div>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        };
+
+        window.openAddVendorModal = () => {
+            document.getElementById('vendor-modal-title').innerHTML = '<i class="fa-solid fa-plus mr-2"></i> Tambah Vendor Pembanding';
+            document.getElementById('input-vendor-id').value = '';
+            document.getElementById('input-v-name').value = '';
+            document.getElementById('input-v-service').value = '';
+            document.getElementById('input-v-portfolio').value = '8';
+            document.getElementById('input-v-response').value = '8';
+            document.getElementById('input-v-price').value = '';
+            document.getElementById('input-v-proscons').value = '';
+            document.getElementById('modal-add-vendor').classList.remove('hidden');
+        };
+
+        window.editVendor = (id) => {
+            const item = state.vendors.find(v => v.id === id);
+            if (!item) return;
+
+            document.getElementById('vendor-modal-title').innerHTML = '<i class="fa-solid fa-pen mr-2"></i> Edit Evaluasi Vendor';
+            document.getElementById('input-vendor-id').value = item.id;
+            document.getElementById('input-v-name').value = item.name;
+            document.getElementById('input-v-service').value = item.service;
+            document.getElementById('input-v-portfolio').value = item.portfolio;
+            document.getElementById('input-v-response').value = item.response;
+            document.getElementById('input-v-price').value = item.price;
+            document.getElementById('input-v-proscons').value = item.proscons;
+            document.getElementById('input-v-decision').value = item.decision;
+            document.getElementById('modal-add-vendor').classList.remove('hidden');
+        };
+
+        window.saveVendorData = async () => {
+            const id = document.getElementById('input-vendor-id').value || crypto.randomUUID();
+            const name = document.getElementById('input-v-name').value;
+            const service = document.getElementById('input-v-service').value;
+            const portfolio = Number(document.getElementById('input-v-portfolio').value) || 8;
+            const response = Number(document.getElementById('input-v-response').value) || 8;
+            const price = Number(document.getElementById('input-v-price').value) || 0;
+            const proscons = document.getElementById('input-v-proscons').value;
+            const decision = document.getElementById('input-v-decision').value;
+
+            if (!name || !service) {
+                showNotification("Gagal", "Nama Vendor dan Kategori wajib diisi.", "error");
+                return;
+            }
+
+            const data = { id, name, service, portfolio, response, price, proscons, decision };
+
+            if (isFirebaseActive) {
+                await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'vendors', id), data);
+            } else {
+                const idx = state.vendors.findIndex(v => v.id === id);
+                if (idx > -1) state.vendors[idx] = data;
+                else state.vendors.push(data);
+                saveToLocalStorage();
+                renderVendor();
+            }
+
+            closeModal('modal-add-vendor');
+            showNotification("Vendor Update", "Konfigurasi vendor berhasil disimpan.", "success");
+        };
+
+        window.deleteVendor = async (id) => {
+            if (isFirebaseActive) {
+                await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'vendors', id));
+            } else {
+                state.vendors = state.vendors.filter(v => v.id !== id);
+                saveToLocalStorage();
+                renderVendor();
+            }
+            showNotification("Vendor Dihapus", "Satu vendor pembanding dihapus.", "success");
+        };
+
+        const renderRundown = () => {
+            const tbody = document.getElementById('rundown-table-body');
+            if (!tbody) return;
+            tbody.innerHTML = '';
+
+            state.rundown.sort((a, b) => a.time.localeCompare(b.time)).forEach(item => {
+                const tr = document.createElement('tr');
+                tr.className = "hover:bg-slate-50/70 transition-colors";
+                tr.innerHTML = `
+                    <td class="py-4 px-4 text-center font-bold text-slate-800 bg-slate-50/50 rounded-lg text-xs">${item.time}</td>
+                    <td class="py-4 px-4 text-center font-medium text-slate-500 text-xs">${item.duration} Menit</td>
+                    <td class="py-4 px-4 font-bold text-slate-700 leading-snug">${item.activity}</td>
+                    <td class="py-4 px-4 text-xs font-semibold text-slate-600">${item.pic || '-'}</td>
+                    <td class="py-4 px-4 text-xs text-slate-500 leading-normal">${item.involved || '-'}</td>
+                    <td class="py-4 px-4 text-xs text-slate-400 leading-normal font-medium">${item.notes || '-'}</td>
+                    <td class="py-4 px-4 text-center">
+                        <div class="flex items-center justify-center space-x-2">
+                            <button onclick="editRundown('${item.id}')" class="p-1 text-slate-400 hover:text-gold-600"><i class="fa-solid fa-pen text-xs"></i></button>
+                            <button onclick="deleteRundown('${item.id}')" class="p-1 text-slate-400 hover:text-red-500"><i class="fa-solid fa-trash-can text-xs"></i></button>
+                        </div>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        };
+
+        window.openAddRundownModal = () => {
+            document.getElementById('rundown-modal-title').innerHTML = '<i class="fa-solid fa-plus mr-2"></i> Tambah Acara Hari-H';
+            document.getElementById('input-rundown-id').value = '';
+            document.getElementById('input-r-time').value = '';
+            document.getElementById('input-r-duration').value = '';
+            document.getElementById('input-r-activity').value = '';
+            document.getElementById('input-r-pic').value = '';
+            document.getElementById('input-r-involved').value = '';
+            document.getElementById('input-r-notes').value = '';
+            document.getElementById('modal-add-rundown').classList.remove('hidden');
+        };
+
+        window.editRundown = (id) => {
+            const item = state.rundown.find(r => r.id === id);
+            if (!item) return;
+
+            document.getElementById('rundown-modal-title').innerHTML = '<i class="fa-solid fa-pen mr-2"></i> Edit Acara Rundown';
+            document.getElementById('input-rundown-id').value = item.id;
+            document.getElementById('input-r-time').value = item.time;
+            document.getElementById('input-r-duration').value = item.duration;
+            document.getElementById('input-r-activity').value = item.activity;
+            document.getElementById('input-r-pic').value = item.pic;
+            document.getElementById('input-r-involved').value = item.involved;
+            document.getElementById('input-r-notes').value = item.notes;
+            document.getElementById('modal-add-rundown').classList.remove('hidden');
+        };
+
+        window.saveRundownData = async () => {
+            const id = document.getElementById('input-rundown-id').value || crypto.randomUUID();
+            const time = document.getElementById('input-r-time').value;
+            const duration = Number(document.getElementById('input-r-duration').value) || 30;
+            const activity = document.getElementById('input-r-activity').value;
+            const pic = document.getElementById('input-r-pic').value;
+            const involved = document.getElementById('input-r-involved').value;
+            const notes = document.getElementById('input-r-notes').value;
+
+            if (!time || !activity) {
+                showNotification("Gagal", "Waktu dan Nama Aktivitas wajib diisi.", "error");
+                return;
+            }
+
+            const data = { id, time, duration, activity, pic, involved, notes };
+
+            if (isFirebaseActive) {
+                await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'rundown', id), data);
+            } else {
+                const idx = state.rundown.findIndex(r => r.id === id);
+                if (idx > -1) state.rundown[idx] = data;
+                else state.rundown.push(data);
+                saveToLocalStorage();
+                renderRundown();
+            }
+
+            closeModal('modal-add-rundown');
+            showNotification("Rundown Tersimpan", "Item rundown berhasil disimpan.", "success");
+        };
+
+        window.deleteRundown = async (id) => {
+            if (isFirebaseActive) {
+                await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'rundown', id));
+            } else {
+                state.rundown = state.rundown.filter(r => r.id !== id);
+                saveToLocalStorage();
+                renderRundown();
+            }
+            showNotification("Acara Dihapus", "Satu jadwal rundown berhasil dikeluarkan.", "success");
+        };
+
+        const renderEmergency = () => {
+            const tbody = document.getElementById('emergency-table-body');
+            if (!tbody) return;
+            tbody.innerHTML = '';
+
+            state.emergency.forEach(item => {
+                const tr = document.createElement('tr');
+                tr.className = "hover:bg-slate-50/70 transition-colors";
+                tr.innerHTML = `
+                    <td class="py-3 px-4 text-center">
+                        <input onchange="toggleEmergencyCheck('${item.id}', this.checked)" type="checkbox" ${item.done ? 'checked' : ''} class="w-4 h-4 text-gold-600 border-slate-300 rounded focus:ring-gold-500 cursor-pointer">
+                    </td>
+                    <td class="py-3 px-4">
+                        <span class="inline-flex px-2 py-0.5 rounded text-[10px] font-bold bg-slate-100 text-slate-500">${item.category}</span>
+                    </td>
+                    <td class="py-3 px-4 font-semibold text-slate-700 ${item.done ? 'line-through text-slate-400' : ''}">${item.item}</td>
+                    <td class="py-3 px-4 text-center font-bold text-slate-600 text-xs">${item.count || 'Secukupnya'}</td>
+                    <td class="py-3 px-4 text-xs font-semibold text-slate-500">${item.pic || '-'}</td>
+                    <td class="py-3 px-4 text-xs text-slate-400 leading-normal font-medium">${item.notes || '-'}</td>
+                `;
+                tbody.appendChild(tr);
+            });
+        };
+
+        window.toggleEmergencyCheck = async (id, isChecked) => {
+            if (isFirebaseActive) {
+                await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'emergency', id), { done: isChecked });
+            } else {
+                const idx = state.emergency.findIndex(e => e.id === id);
+                if (idx > -1) state.emergency[idx].done = isChecked;
+                saveToLocalStorage();
+                renderEmergency();
+            }
+            showNotification("Status Inventaris", "Status keberadaan emergency kit diperbarui.", "success");
+        };
+
+        window.closeModal = (id) => {
+            document.getElementById(id).classList.add('hidden');
+        };
+
+        window.onload = function() {
+            initFirebase();
+        };
+    </script>
+</body>
+</html>
