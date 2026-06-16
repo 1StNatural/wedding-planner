@@ -340,6 +340,52 @@
                         </table>
                     </div>
                 </div>
+
+                <!-- Seserahan / Hantaran List Section -->
+                <div class="bg-white rounded-2xl border border-gold-100 shadow-sm p-6 space-y-4">
+                    <div class="flex justify-between items-center pb-4 border-b border-slate-100">
+                        <h3 class="font-serif text-xl font-bold text-slate-800 flex items-center gap-2">
+                            <i class="fa-solid fa-gift text-gold-600"></i> List Hantaran / Seserahan Pernikahan
+                        </h3>
+                        <button onclick="openAddSeserahanModal()" class="bg-gold-500 hover:bg-gold-600 text-white font-semibold text-xs px-3.5 py-2 rounded-xl flex items-center gap-1.5 transition-colors shadow-sm">
+                            <i class="fa-solid fa-plus"></i> Tambah Barang Seserahan
+                        </button>
+                    </div>
+                    <!-- Mini Stats Seserahan -->
+                    <div class="grid grid-cols-2 sm:grid-cols-3 gap-4 text-center bg-gold-50/50 p-4 rounded-xl border border-gold-100/50">
+                        <div>
+                            <p class="text-[10px] font-bold text-slate-400 uppercase">Sudah Dibeli</p>
+                            <h4 class="text-lg font-bold text-emerald-600" id="seserahan-count-done">0 Barang</h4>
+                        </div>
+                        <div>
+                            <p class="text-[10px] font-bold text-slate-400 uppercase">Belum Dibeli</p>
+                            <h4 class="text-lg font-bold text-amber-600" id="seserahan-count-pending">0 Barang</h4>
+                        </div>
+                        <div class="col-span-2 sm:col-span-1 border-t sm:border-t-0 sm:border-l border-slate-200/60 pt-2 sm:pt-0">
+                            <p class="text-[10px] font-bold text-slate-400 uppercase">Total Estimasi Anggaran</p>
+                            <h4 class="text-lg font-bold text-slate-800" id="seserahan-total-price">Rp 0</h4>
+                        </div>
+                    </div>
+                    <!-- Seserahan Table -->
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left border-collapse">
+                            <thead>
+                                <tr class="bg-slate-50 text-slate-500 text-[11px] font-bold uppercase tracking-wider border-b border-slate-100">
+                                    <th class="py-3 px-4 w-12 text-center">Status</th>
+                                    <th class="py-3 px-4">Nama Barang Seserahan</th>
+                                    <th class="py-3 px-4 w-32">Kategori</th>
+                                    <th class="py-3 px-4 text-right w-36">Estimasi Harga</th>
+                                    <th class="py-3 px-4 w-36">PIC Pembelian</th>
+                                    <th class="py-3 px-4">Catatan / Detail Toko</th>
+                                    <th class="py-3 px-4 w-16 text-center">Aksi</th>
+                                </tr>
+                            </thead>
+                            <tbody id="seserahan-table-body" class="text-sm divide-y divide-slate-50">
+                                <!-- Dynamic Loading -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
             </div>
 
             <!-- TAB 3: BUDGET TRACKER -->
@@ -908,6 +954,59 @@
         </div>
     </div>
 
+    <!-- MODAL 9: Add/Edit Seserahan -->
+    <div id="modal-add-seserahan" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm hidden flex items-center justify-center z-50 p-4">
+        <div class="bg-white rounded-3xl w-full max-w-lg shadow-xl overflow-hidden">
+            <div class="bg-gold-500 text-white px-6 py-4 flex justify-between items-center">
+                <h4 class="font-serif font-bold text-lg" id="seserahan-modal-title"><i class="fa-solid fa-gift mr-2"></i> Tambah Barang Seserahan</h4>
+                <button onclick="closeModal('modal-add-seserahan')" class="text-white hover:text-slate-200"><i class="fa-solid fa-xmark text-xl"></i></button>
+            </div>
+            <input type="hidden" id="input-seserahan-id">
+            <div class="p-6 space-y-4">
+                <div>
+                    <label class="block text-xs font-bold text-slate-500 uppercase mb-1.5">Nama Barang Seserahan</label>
+                    <input id="input-s-item" type="text" class="w-full px-4 py-2.5 border border-slate-200 rounded-xl text-sm focus:outline-none" placeholder="Contoh: Sepatu & Tas Kerja Wanita">
+                </div>
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs font-bold text-slate-500 uppercase mb-1.5">Kategori</label>
+                        <select id="input-s-category" class="w-full px-4 py-2.5 border border-slate-200 rounded-xl text-sm focus:outline-none bg-white">
+                            <option value="Ibadah">Ibadah</option>
+                            <option value="Kecantikan">Kecantikan / Skincare</option>
+                            <option value="Pakaian">Pakaian / Fashion</option>
+                            <option value="Aksesoris">Perhiasan / Aksesoris</option>
+                            <option value="Makanan">Makanan / Buah</option>
+                            <option value="Perlengkapan Rumah">Perlengkapan Rumah</option>
+                            <option value="Lainnya">Lainnya</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-500 uppercase mb-1.5">Estimasi Harga (Rp)</label>
+                        <input id="input-s-price" type="number" class="w-full px-4 py-2.5 border border-slate-200 rounded-xl text-sm focus:outline-none" placeholder="1500000">
+                    </div>
+                </div>
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs font-bold text-slate-500 uppercase mb-1.5">PIC Pembelian</label>
+                        <input id="input-s-pic" type="text" class="w-full px-4 py-2.5 border border-slate-200 rounded-xl text-sm focus:outline-none" placeholder="Contoh: Pengantin Pria">
+                    </div>
+                    <div class="flex items-center space-x-3 pt-6">
+                        <input id="input-s-done" type="checkbox" class="w-4 h-4 text-gold-600 border-slate-300 rounded focus:ring-gold-500 cursor-pointer">
+                        <label for="input-s-done" class="text-xs font-bold text-slate-600 cursor-pointer">Sudah Dibeli?</label>
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-slate-500 uppercase mb-1.5">Catatan / Detail Spesifik</label>
+                    <textarea id="input-s-notes" rows="2" class="w-full px-4 py-2.5 border border-slate-200 rounded-xl text-sm focus:outline-none" placeholder="Contoh: Beli merk Charles & Keith ukuran sepatu 38, warna beige."></textarea>
+                </div>
+            </div>
+            <div class="bg-slate-50 px-6 py-4 flex justify-end space-x-3">
+                <button onclick="closeModal('modal-add-seserahan')" class="px-4 py-2 rounded-xl text-xs font-bold text-slate-500 hover:bg-slate-100">Batal</button>
+                <button onclick="saveSeserahanData()" class="bg-gold-500 hover:bg-gold-600 text-white font-bold text-xs px-5 py-2.5 rounded-xl shadow-sm">Simpan</button>
+            </div>
+        </div>
+    </div>
+
     <!-- Floating Toast Notification System -->
     <div class="fixed bottom-6 right-6 z-50 space-y-3" id="toast-container"></div>
 
@@ -962,7 +1061,8 @@
             vendors: [],
             guests: [],
             rundown: [],
-            emergency: []
+            emergency: [],
+            seserahan: []
         };
 
         let isFirebaseActive = false;
@@ -974,6 +1074,8 @@
             if (savedState) {
                 try {
                     state = JSON.parse(savedState);
+                    if (!state.vendors) state.vendors = [];
+                    if (!state.seserahan) state.seserahan = [];
                 } catch (e) {
                     console.error("Gagal memuat local storage data.", e);
                 }
@@ -1003,6 +1105,14 @@
                 ];
                 state.emergency = [
                     { id: 'e1', category: 'Medis', item: 'Parasetamol', count: '1 Strip', pic: 'WO', notes: 'Mencegah pusing', done: false }
+                ];
+                state.vendors = [
+                    { id: 'v1', name: 'Vendor Catering A', service: 'Catering', portfolio: 9, response: 8, price: 75000000, proscons: '(+) Rasa makanan enak, premium. (-) Sedikit mahal.', decision: 'Alternatif' },
+                    { id: 'v2', name: 'Vendor Catering B', service: 'Catering', portfolio: 8, response: 9, price: 72000000, proscons: '(+) Respons sangat cepat, banyak bonus gubukan.', decision: 'DIPILIH' }
+                ];
+                state.seserahan = [
+                    { id: 's1', item: 'Seperangkat Alat Salat', category: 'Ibadah', price: 1500000, pic: 'Pengantin Pria', notes: 'Mukena sutra putih, sajadah tebal, Al-Quran terjemahan', done: true },
+                    { id: 's2', item: 'Set Kosmetik & Skincare', category: 'Kecantikan', price: 2000000, pic: 'Pengantin Wanita', notes: 'Sesuai request merk dari Catin Wanita', done: false }
                 ];
                 saveToLocalStorage();
             }
@@ -1082,7 +1192,7 @@
             });
 
             // Listening collections with explicit error callback (Rule 3)
-            const collectionsList = ['budget', 'guests', 'timeline', 'legal', 'committee', 'rundown', 'emergency'];
+            const collectionsList = ['budget', 'guests', 'timeline', 'legal', 'committee', 'rundown', 'emergency', 'vendors', 'seserahan'];
             collectionsList.forEach(col => {
                 onSnapshot(collection(db, 'artifacts', appId, 'public', 'data', col), (snap) => {
                     state[col] = [];
@@ -1159,6 +1269,8 @@
             renderCommittee();
             renderRundown();
             renderEmergency();
+            renderVendor();
+            renderSeserahan();
         };
 
         // Format Currency Helper
@@ -1940,6 +2052,130 @@
                 renderVendor();
             }
             showNotification("Vendor Dihapus", "Satu vendor pembanding dihapus.", "success");
+        };
+
+        const renderSeserahan = () => {
+            const tbody = document.getElementById('seserahan-table-body');
+            if (!tbody) return;
+            tbody.innerHTML = '';
+
+            let totalEstimated = 0;
+            let doneCount = 0;
+            let pendingCount = 0;
+
+            if (!state.seserahan) state.seserahan = [];
+
+            state.seserahan.forEach(item => {
+                totalEstimated += (item.price || 0);
+                if (item.done) doneCount++;
+                else pendingCount++;
+
+                const tr = document.createElement('tr');
+                tr.className = "hover:bg-slate-50/70 transition-colors";
+                tr.innerHTML = `
+                    <td class="py-3 px-4 text-center">
+                        <input onchange="toggleSeserahanCheck('${item.id}', this.checked)" type="checkbox" ${item.done ? 'checked' : ''} class="w-4 h-4 text-gold-600 border-slate-300 rounded focus:ring-gold-500 cursor-pointer">
+                    </td>
+                    <td class="py-3 px-4 font-semibold text-slate-700 ${item.done ? 'line-through text-slate-400' : ''}">${item.item}</td>
+                    <td class="py-3 px-4">
+                        <span class="inline-flex px-2 py-0.5 rounded text-[10px] font-bold bg-slate-100 text-slate-500">${item.category}</span>
+                    </td>
+                    <td class="py-3 px-4 text-right font-bold text-slate-800">${formatRupiah(item.price || 0)}</td>
+                    <td class="py-3 px-4 text-xs font-semibold text-slate-500">${item.pic || '-'}</td>
+                    <td class="py-3 px-4 text-xs text-slate-400 font-medium leading-normal">${item.notes || '-'}</td>
+                    <td class="py-3 px-4 text-center">
+                        <div class="flex items-center justify-center space-x-2">
+                            <button onclick="editSeserahan('${item.id}')" class="p-1 text-slate-400 hover:text-gold-600"><i class="fa-solid fa-pen text-xs"></i></button>
+                            <button onclick="deleteSeserahan('${item.id}')" class="p-1 text-slate-400 hover:text-red-500"><i class="fa-solid fa-trash-can text-xs"></i></button>
+                        </div>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+
+            document.getElementById('seserahan-count-done').innerText = `${doneCount} Barang`;
+            document.getElementById('seserahan-count-pending').innerText = `${pendingCount} Barang`;
+            document.getElementById('seserahan-total-price').innerText = formatRupiah(totalEstimated);
+        };
+
+        window.toggleSeserahanCheck = async (id, isChecked) => {
+            if (isFirebaseActive) {
+                await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'seserahan', id), { done: isChecked });
+            } else {
+                const idx = state.seserahan.findIndex(s => s.id === id);
+                if (idx > -1) state.seserahan[idx].done = isChecked;
+                saveToLocalStorage();
+                renderSeserahan();
+            }
+            showNotification("Status Seserahan", "Status hantaran berhasil diperbarui.", "success");
+        };
+
+        window.openAddSeserahanModal = () => {
+            document.getElementById('seserahan-modal-title').innerHTML = '<i class="fa-solid fa-gift mr-2"></i> Tambah Barang Seserahan';
+            document.getElementById('input-seserahan-id').value = '';
+            document.getElementById('input-s-item').value = '';
+            document.getElementById('input-s-category').value = 'Ibadah';
+            document.getElementById('input-s-price').value = '';
+            document.getElementById('input-s-pic').value = '';
+            document.getElementById('input-s-done').checked = false;
+            document.getElementById('input-s-notes').value = '';
+            document.getElementById('modal-add-seserahan').classList.remove('hidden');
+        };
+
+        window.editSeserahan = (id) => {
+            const item = state.seserahan.find(s => s.id === id);
+            if (!item) return;
+
+            document.getElementById('seserahan-modal-title').innerHTML = '<i class="fa-solid fa-pen mr-2"></i> Edit Barang Seserahan';
+            document.getElementById('input-seserahan-id').value = item.id;
+            document.getElementById('input-s-item').value = item.item;
+            document.getElementById('input-s-category').value = item.category;
+            document.getElementById('input-s-price').value = item.price;
+            document.getElementById('input-s-pic').value = item.pic;
+            document.getElementById('input-s-done').checked = item.done;
+            document.getElementById('input-s-notes').value = item.notes;
+            document.getElementById('modal-add-seserahan').classList.remove('hidden');
+        };
+
+        window.saveSeserahanData = async () => {
+            const id = document.getElementById('input-seserahan-id').value || crypto.randomUUID();
+            const item = document.getElementById('input-s-item').value;
+            const category = document.getElementById('input-s-category').value;
+            const price = Number(document.getElementById('input-s-price').value) || 0;
+            const pic = document.getElementById('input-s-pic').value;
+            const done = document.getElementById('input-s-done').checked;
+            const notes = document.getElementById('input-s-notes').value;
+
+            if (!item) {
+                showNotification("Gagal", "Nama Barang Seserahan wajib diisi.", "error");
+                return;
+            }
+
+            const data = { id, item, category, price, pic, done, notes };
+
+            if (isFirebaseActive) {
+                await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'seserahan', id), data);
+            } else {
+                const idx = state.seserahan.findIndex(s => s.id === id);
+                if (idx > -1) state.seserahan[idx] = data;
+                else state.seserahan.push(data);
+                saveToLocalStorage();
+                renderSeserahan();
+            }
+
+            closeModal('modal-add-seserahan');
+            showNotification("Seserahan Disimpan", "Hantaran berhasil diperbarui.", "success");
+        };
+
+        window.deleteSeserahan = async (id) => {
+            if (isFirebaseActive) {
+                await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'seserahan', id));
+            } else {
+                state.seserahan = state.seserahan.filter(s => s.id !== id);
+                saveToLocalStorage();
+                renderSeserahan();
+            }
+            showNotification("Seserahan Dihapus", "Hantaran berhasil dihapus.", "success");
         };
 
         const renderRundown = () => {
